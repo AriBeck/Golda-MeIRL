@@ -4,6 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.goldameril.MapFragment">
 
+    <data>
+
+        <variable
+            name="viewModel"
+            type="com.example.goldameirl.viewmodel.MapViewModel" />
+
+    </data>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/titleConstraint"
         android:layout_width="match_parent"

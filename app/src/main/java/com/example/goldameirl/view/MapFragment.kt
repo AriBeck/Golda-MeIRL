@@ -1,4 +1,4 @@
-package com.example.goldameirl
+package com.example.goldameirl.view
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -6,11 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.DataBindingUtil.setContentView
+import androidx.lifecycle.ViewModelProvider
+import com.example.goldameirl.R
+import com.example.goldameirl.viewmodel.MapViewModel
 import com.example.goldameirl.databinding.FragmentMapBinding
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.maps.MapView
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
 
 /**
@@ -20,13 +21,16 @@ class MapFragment : Fragment() {
 
     lateinit var mapView: MapView
 
+    lateinit var viewModel: MapViewModel
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        Mapbox.getInstance(this.context!!, "pk.eyJ1IjoiYXJpYmVjazUyIiwiYSI6ImNrOGZwa2ZveTAxdzQzbG4yOTl5ajZhOWgifQ.Ht_h6D6yCqdRTJohKF0nJA");
+        Mapbox.getInstance(this.context!!, "pk.eyJ1IjoiYXJpYmVjazUyIiwiYSI6ImNrOGZwa2ZveTAxdzQzbG4yOTl5ajZhOWgifQ.Ht_h6D6yCqdRTJohKF0nJA")
         val binding = DataBindingUtil.inflate<FragmentMapBinding>(inflater,
             R.layout.fragment_map,container,false)
+        viewModel = ViewModelProvider(this).get(MapViewModel::class.java)
         mapView = binding.mapView
-        mapView.onCreate(savedInstanceState);
+        mapView.onCreate(savedInstanceState)
         mapView.getMapAsync { mapboxMap ->
             mapboxMap.setStyle(Style.MAPBOX_STREETS) {
 
@@ -36,7 +40,7 @@ class MapFragment : Fragment() {
         return binding.root
     }
 
-    public override fun onResume() {
+    override fun onResume() {
         super.onResume()
         mapView.onResume()
     }
@@ -51,7 +55,7 @@ class MapFragment : Fragment() {
         mapView.onStop()
     }
 
-    public override fun onPause() {
+    override fun onPause() {
         super.onPause()
         mapView.onPause()
     }

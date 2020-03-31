@@ -6,6 +6,6 @@
     app:startDestination="@id/mapFragment">
     <fragment
         android:id="@+id/mapFragment"
-        android:name="com.example.goldameirl.MapFragment"
+        android:name="com.example.goldameirl.view.MapFragment"
         android:label="MapFragment" />
 </navigation>

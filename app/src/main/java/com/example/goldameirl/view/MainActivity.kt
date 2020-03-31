@@ -1,7 +1,8 @@
-package com.example.goldameirl
+package com.example.goldameirl.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.goldameirl.R
 
 class MainActivity : AppCompatActivity() {
 
