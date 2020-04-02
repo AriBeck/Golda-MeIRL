@@ -16,11 +16,11 @@ import java.lang.Exception
 
 class MapViewModel: ViewModel() {
     // The internal MutableLiveData String that stores the most recent response
-    private val _response = MutableLiveData<String>()
+    private val _toNotifications = MutableLiveData<Boolean>()
 
     // The external immutable LiveData for the response String
-    val response: LiveData<String>
-        get() = _response
+    val toNotifications: LiveData<Boolean>
+        get() = _toNotifications
 
     private val _branches = MutableLiveData<List<Branch>>()
     val branches: LiveData<List<Branch>>
@@ -42,17 +42,21 @@ class MapViewModel: ViewModel() {
      */
     private fun getBranches() {
         coroutineScope.launch {
-            var getBranchesDeferred = BranchAPI.retrofitService.getBranches()
+            val getBranchesDeferred = BranchAPI.retrofitService.getBranches()
             try {
-                var listResult = getBranchesDeferred.await()
-                _response.value =
-                    "Success: ${listResult.size} Branches retrieved"
+                val listResult = getBranchesDeferred.await()
 
                 _branches.value = listResult
-            } catch (e: Exception) {
-                _response.value = "Failure: ${e.message}"
-            }
+            } catch (e: Exception) { }
         }
+    }
+
+    fun onNotificationsClick() {
+        _toNotifications.value = true
+    }
+
+    fun onNotificationsClicked() {
+        _toNotifications.value = false
     }
 
     override fun onCleared() {

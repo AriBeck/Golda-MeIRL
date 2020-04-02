@@ -7,5 +7,16 @@
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.example.goldameirl.view.MapFragment"
-        android:label="MapFragment" />
+        android:label="MapFragment" >
+        <action
+            android:id="@+id/mapFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment"
+            app:popUpTo="@id/mapFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.example.goldameirl.NotificationsFragment"
+        android:label="fragment_notifications"
+        tools:layout="@layout/fragment_notifications" />
 </navigation>

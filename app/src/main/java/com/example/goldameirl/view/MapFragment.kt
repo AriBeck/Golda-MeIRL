@@ -10,6 +10,8 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.example.goldameirl.R
 import com.example.goldameirl.viewmodel.MapViewModel
 import com.example.goldameirl.databinding.FragmentMapBinding
@@ -49,9 +51,16 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
             R.layout.fragment_map,container,false)
         viewModel = ViewModelProvider(this).get(MapViewModel::class.java)
         mapView = binding.mapView
+        binding.viewModel = viewModel
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
-
+        viewModel.toNotifications.observe(viewLifecycleOwner, Observer { toNotifications ->
+            if(toNotifications){
+                this.findNavController().navigate(MapFragmentDirections
+                    .mapFragmentToNotificationsFragment())
+                viewModel.onNotificationsClicked()
+            }
+        })
 
 
         return binding.root
