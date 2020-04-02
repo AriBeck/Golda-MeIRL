@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/notificationsFragment"
-        android:name="com.example.goldameirl.NotificationsFragment"
+        android:name="com.example.goldameirl.view.NotificationsFragment"
         android:label="fragment_notifications"
         tools:layout="@layout/fragment_notifications" />
 </navigation>
