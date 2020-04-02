@@ -1,14 +1,12 @@
 package com.example.goldameirl.view
 
 import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.graphics.scale
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -19,7 +17,6 @@ import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
-//import com.mapbox.mapboxsdk.annotations.Icon
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
@@ -30,22 +27,12 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
-import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer
-
-//import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 
 
 /**
  * A simple [Fragment] subclass.
  */
 class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
-
-    private val SOURCE_ID = "SOURCE_ID";
-    private val ICON_ID = "ICON_ID";
-    private val LAYER_ID = "LAYER_ID";
 
     lateinit var mapView: MapView
 
@@ -54,8 +41,6 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
 
     private var permissionsManager: PermissionsManager = PermissionsManager(this)
     private lateinit var mapboxMap: MapboxMap
-
-    private lateinit var symbolManager: SymbolManager
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -82,7 +67,7 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
                 branches.forEach {branch ->
                     mapboxMap.addMarker(MarkerOptions()
                         .position(LatLng(branch.latitude, branch.longtitude))
-                        .setIcon(IconFactory.getInstance(activity!!).fromResource(R.drawable.output_onlinepngtools))
+                        .setIcon(IconFactory.getInstance(activity!!).fromResource(R.drawable.icon_branch))
                         .title(branch.name)
                         .setSnippet(branch.address))
                 }
