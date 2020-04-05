@@ -70,7 +70,6 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
         this.mapboxMap = mapboxMap
         mapboxMap.setStyle(Style.Builder()
             .fromUri("mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41")) {
-
             viewModel.branches.observe(viewLifecycleOwner, Observer { branches ->
                 Toast.makeText(activity, "Total branches: ${branches.size}", Toast.LENGTH_LONG).show()
                 branches.forEach {branch ->
