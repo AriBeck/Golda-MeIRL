@@ -1,10 +1,15 @@
 package com.example.goldameirl.viewmodel
 
+import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.model.BranchAPI
+import com.example.goldameirl.model.BranchManager
+import com.example.goldameirl.model.Notification
+import com.example.goldameirl.model.db.DB
+import com.mapbox.mapboxsdk.maps.MapboxMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,42 +19,55 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.lang.Exception
 
-class MapViewModel: ViewModel() {
-    // The internal MutableLiveData String that stores the most recent response
-    private val _toNotifications = MutableLiveData<Boolean>()
+const val NOTIFICATION_INTERVAL = 300000L
 
-    // The external immutable LiveData for the response String
+class MapViewModel(
+    private val db: DB): ViewModel() {
+    private val viewModelJob = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+
+    private val _toNotifications = MutableLiveData<Boolean>()
     val toNotifications: LiveData<Boolean>
         get() = _toNotifications
+
+    val branchManager: BranchManager = BranchManager(db)
 
     private val _branches = MutableLiveData<List<Branch>>()
     val branches: LiveData<List<Branch>>
         get() = _branches
 
-    private var viewModelJob = Job()
-
-    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
+    private var notificationTime: Long = 0L
 
     /**
      * Call getMarsRealEstateProperties() on init so we can display status immediately.
      */
     init {
-        getBranches()
+        coroutineScope.launch {
+            _branches.value = branchManager.getBranches()
+        }
+    }
+
+    fun checkBranchDistance(location: Location) {
+        branches.value?.forEach { branch ->
+            if(branchManager.isBranchIn500(location, branch) && hasTimePast()){
+                notificationTime = System.currentTimeMillis()
+                val newNotification = Notification(title = branch.name, content = branch.discounts)
+                coroutineScope.launch {
+                    branchManager.insertNotification(newNotification)
+                }
+                // build phone notification
+            }
+        }
+    }
+
+    private fun hasTimePast(): Boolean {
+        return (System.currentTimeMillis() - notificationTime) >= NOTIFICATION_INTERVAL
     }
 
     /**
      * Sets the value of the status LiveData to the Mars API status.
      */
-    private fun getBranches() {
-        coroutineScope.launch {
-            val getBranchesDeferred = BranchAPI.retrofitService.getBranches()
-            try {
-                val listResult = getBranchesDeferred.await()
 
-                _branches.value = listResult
-            } catch (e: Exception) { }
-        }
-    }
 
     fun onNotificationsClick() {
         _toNotifications.value = true
@@ -62,5 +80,6 @@ class MapViewModel: ViewModel() {
     override fun onCleared() {
         super.onCleared()
         viewModelJob.cancel()
+        branchManager.mainJob.cancel()
     }
 }
