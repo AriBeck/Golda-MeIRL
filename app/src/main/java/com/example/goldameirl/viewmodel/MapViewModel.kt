@@ -42,7 +42,12 @@ class MapViewModel(
     fun checkBranchDistance(location: Location) {
         branches.value?.forEach { branch ->
             if (branchManager.isBranchIn500(location, branch) && hasTimePast()) {
+                val preferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE)
                 notificationTime = System.currentTimeMillis()
+                with(preferences.edit()) {
+                    putLong("NotificationTime", notificationTime!!)
+                    commit()
+                }
                 NotificationHandler(context).createNotification(branch.name, branch.discounts)
             }
         }

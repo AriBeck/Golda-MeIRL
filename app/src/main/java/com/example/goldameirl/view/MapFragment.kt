@@ -1,6 +1,7 @@
 package com.example.goldameirl.view
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
@@ -67,7 +68,8 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
             )
         ).get(MapViewModel::class.java)
 
-        viewModel.notificationTime = savedInstanceState?.getLong(NOTIFICATION_TIME)
+        val preferences = activity!!.getSharedPreferences("pref", Context.MODE_PRIVATE)
+        viewModel.notificationTime = preferences.getLong(NOTIFICATION_TIME, 0L)
 
         mapView = binding.mapView
         binding.viewModel = viewModel
@@ -229,7 +231,6 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putLong(NOTIFICATION_TIME, viewModel.notificationTime!!)
         mapView.onSaveInstanceState(outState)
     }
 
