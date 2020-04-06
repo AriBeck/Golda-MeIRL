@@ -1,4 +1,4 @@
-package com.example.goldameirl.viewmodel
+package com.example.goldameirl.misc
 
 import android.annotation.SuppressLint
 import android.widget.TextView

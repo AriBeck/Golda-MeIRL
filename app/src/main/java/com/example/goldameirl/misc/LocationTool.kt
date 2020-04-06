@@ -1,4 +1,4 @@
-package com.example.goldameirl.viewmodel
+package com.example.goldameirl.misc
 
 import android.location.Location
 import android.widget.Toast
@@ -9,8 +9,9 @@ import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapboxMap
 
-fun centerCameraOnLocation(mapboxMap: MapboxMap,location: Location) {
+fun centerCameraOnLocation(mapboxMap: MapboxMap, location: Location) {
     mapboxMap.animateCamera(
         CameraUpdateFactory
-            .newLatLngZoom(LatLng(location.latitude, location.longitude), 13.0))
+            .newLatLngZoom(LatLng(location.latitude, location.longitude), 13.0)
+    )
 }

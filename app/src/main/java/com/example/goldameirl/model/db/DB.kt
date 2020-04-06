@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.goldameirl.model.Notification
 
 @Database(entities = [Notification::class], version = 1, exportSchema = false)
-abstract class DB: RoomDatabase() {
+abstract class DB : RoomDatabase() {
     abstract val notificationDAO: NotificationDAO
 
     companion object {
@@ -21,8 +21,7 @@ abstract class DB: RoomDatabase() {
                 if (instance == null) {
                     instance = Room.databaseBuilder(
                         context.applicationContext, DB::class.java, "app_database"
-                    )
-                        .build()
+                    ).build()
                     INSTANCE = instance
                 }
                 return instance

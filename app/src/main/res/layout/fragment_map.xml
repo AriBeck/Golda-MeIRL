@@ -5,11 +5,9 @@
     tools:context="com.example.goldameril.MapFragment">
 
     <data>
-
         <variable
             name="viewModel"
             type="com.example.goldameirl.viewmodel.MapViewModel" />
-
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -57,7 +55,5 @@
 
         </com.mapbox.mapboxsdk.maps.MapView>
 
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </layout>

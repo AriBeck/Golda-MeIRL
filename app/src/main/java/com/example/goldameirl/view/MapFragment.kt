@@ -12,10 +12,10 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentMapBinding
+import com.example.goldameirl.misc.centerCameraOnLocation
 import com.example.goldameirl.model.db.DB
 import com.example.goldameirl.viewmodel.*
 import com.mapbox.android.core.location.*
@@ -24,9 +24,6 @@ import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
-import com.mapbox.mapboxsdk.camera.CameraPosition
-import com.mapbox.mapboxsdk.camera.CameraUpdate
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
@@ -37,42 +34,55 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
 
+const val TOKEN =
+    "pk.eyJ1IjoiYXJpYmVjazUyIiwiYSI6ImNrOGZwa2ZveTAxdzQzbG4yOTl5ajZhOWgifQ.Ht_h6D6yCqdRTJohKF0nJA"
 
-/**
- * A simple [Fragment] subclass.
- */
-class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback{
+const val NOTIFICATION_TIME = "NotificationTime"
+
+class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
 
     lateinit var mapView: MapView
-
     lateinit var viewModel: MapViewModel
-
     var location: Location = Location("myLocation")
-
 
     private lateinit var locationEngine: LocationEngine
     private lateinit var callback: LocationChangeListeningCallback
 
-
     private var permissionsManager: PermissionsManager = PermissionsManager(this)
-    private lateinit var mapboxMap: MapboxMap
+    lateinit var mapboxMap: MapboxMap
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        Mapbox.getInstance(this.context!!, "pk.eyJ1IjoiYXJpYmVjazUyIiwiYSI6ImNrOGZwa2ZveTAxdzQzbG4yOTl5ajZhOWgifQ.Ht_h6D6yCqdRTJohKF0nJA")
-        val binding = DataBindingUtil.inflate<FragmentMapBinding>(inflater,
-            R.layout.fragment_map,container,false)
-        viewModel = ViewModelProvider(this, MapViewModelFactory(
-            DB.getInstance(activity!!.applicationContext)!!)).get(MapViewModel::class.java)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+
+        Mapbox.getInstance(this.context!!, TOKEN)
+
+        val binding = DataBindingUtil.inflate<FragmentMapBinding>(
+            inflater, R.layout.fragment_map, container, false
+        )
+        viewModel = ViewModelProvider(
+            this, MapViewModelFactory(
+                activity!!.applicationContext
+            )
+        ).get(MapViewModel::class.java)
+
+        viewModel.notificationTime = savedInstanceState?.getLong(NOTIFICATION_TIME)
+
         mapView = binding.mapView
         binding.viewModel = viewModel
-        binding.locationButton.setOnClickListener { centerCameraOnLocation(mapboxMap, location) }
+        binding.locationButton.setOnClickListener {
+            centerCameraOnLocation(mapboxMap, location)
+        }
+
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
         viewModel.toNotifications.observe(viewLifecycleOwner, Observer { toNotifications ->
-            if(toNotifications){
-                this.findNavController().navigate(MapFragmentDirections
-                    .mapFragmentToNotificationsFragment())
+            if (toNotifications) {
+                this.findNavController().navigate(
+                    MapFragmentDirections
+                        .mapFragmentToNotificationsFragment()
+                )
                 viewModel.onNotificationsClicked()
             }
         })
@@ -84,21 +94,21 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback{
     override fun onMapReady(mapboxMap: MapboxMap) {
         this.mapboxMap = mapboxMap
         callback = LocationChangeListeningCallback()
-        mapboxMap.setStyle(Style.Builder()
-            .fromUri("mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41")) {
+
+        mapboxMap.setStyle(Style.MAPBOX_STREETS) {
             viewModel.branches.observe(viewLifecycleOwner, Observer { branches ->
-                branches.forEach {branch ->
-                    mapboxMap.addMarker(MarkerOptions()
-                        .position(LatLng(branch.latitude, branch.longtitude))
-                        .setIcon(IconFactory.getInstance(activity!!).fromResource(R.drawable.icon_branch))
-                        .title(branch.name)
-                        .setSnippet(branch.address))
+                branches.forEach { branch ->
+                    mapboxMap.addMarker(
+                        MarkerOptions()
+                            .position(LatLng(branch.latitude, branch.longtitude))
+                            .setIcon(IconFactory.getInstance(activity!!).fromResource(R.drawable.icon_branch))
+                            .title(branch.name)
+                            .setSnippet(branch.address)
+                    )
                 }
             })
 
-
             enableLocationComponent(it)
-
             centerCameraOnLocation(mapboxMap, location)
         }
     }
@@ -106,14 +116,14 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback{
     @SuppressLint("MissingPermission")
     private fun enableLocationComponent(loadedMapStyle: Style) {
         if (PermissionsManager.areLocationPermissionsGranted(activity)) {
-
             val customLocationComponentOptions = LocationComponentOptions.builder(activity!!)
                 .trackingGesturesManagement(true)
                 .build()
 
-            val locationComponentActivationOptions = LocationComponentActivationOptions.builder(activity!!, loadedMapStyle)
-                .locationComponentOptions(customLocationComponentOptions)
-                .build()
+            val locationComponentActivationOptions =
+                LocationComponentActivationOptions.builder(activity!!, loadedMapStyle)
+                    .locationComponentOptions(customLocationComponentOptions)
+                    .build()
 
             mapboxMap.locationComponent.apply {
                 activateLocationComponent(locationComponentActivationOptions)
@@ -132,20 +142,24 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback{
     private fun initLocationEngine() {
 
         locationEngine = LocationEngineProvider.getBestLocationEngine(activity!!)
+
         val request = LocationEngineRequest
             .Builder(1000)
             .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
             .setMaxWaitTime(5000)
             .build()
+
         locationEngine.requestLocationUpdates(request, callback, Looper.getMainLooper())
         locationEngine.getLastLocation(callback)
     }
 
-    private inner class LocationChangeListeningCallback : LocationEngineCallback<LocationEngineResult> {
+    private inner class LocationChangeListeningCallback :
+        LocationEngineCallback<LocationEngineResult> {
 
         override fun onSuccess(result: LocationEngineResult?) {
             result?.lastLocation ?: return
-            if (result.lastLocation != null){
+
+            if (result.lastLocation != null) {
                 location.latitude = result.lastLocation?.latitude!!
                 location.longitude = result.lastLocation?.longitude!!
 
@@ -154,25 +168,31 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback{
                     viewModel.checkBranchDistance(location)
                 }
             }
-
         }
 
         override fun onFailure(exception: Exception) {}
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     override fun onExplanationNeeded(permissionsToExplain: List<String>) {
-        Toast.makeText(activity, R.string.user_location_permission_explanation, Toast.LENGTH_LONG).show()
+        Toast.makeText(activity, R.string.user_location_permission_explanation, Toast.LENGTH_LONG)
+            .show()
     }
 
     override fun onPermissionResult(granted: Boolean) {
         if (granted) {
             enableLocationComponent(mapboxMap.style!!)
         } else {
-            Toast.makeText(activity, R.string.user_location_permission_not_granted, Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                activity, R.string.user_location_permission_not_granted, Toast.LENGTH_LONG
+            ).show()
             activity?.finish()
         }
     }
@@ -209,6 +229,7 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback{
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        outState.putLong(NOTIFICATION_TIME, viewModel.notificationTime!!)
         mapView.onSaveInstanceState(outState)
     }
 
