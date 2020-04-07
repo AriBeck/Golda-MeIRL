@@ -1,6 +1,8 @@
 package com.example.goldameirl.viewmodel
 
+import android.app.AlarmManager
 import android.content.Context
+import android.content.SharedPreferences
 import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -31,7 +33,11 @@ class MapViewModel(
     val branches: LiveData<List<Branch>>
         get() = _branches
 
+    private fun SharedPreferences.Editor.putDouble(key: String, double: Double) =
+        putLong(key, java.lang.Double.doubleToRawLongBits(double))
+
     var notificationTime: Long? = 0L
+    var lastBranch: Double = 0.0
 
     init {
         coroutineScope.launch {
@@ -41,14 +47,18 @@ class MapViewModel(
 
     fun checkBranchDistance(location: Location) {
         branches.value?.forEach { branch ->
-            if (branchManager.isBranchIn500(location, branch) && hasTimePast()) {
+            if (branchManager.isBranchIn500(location, branch) && (hasTimePast()
+                || branch.id != lastBranch)) {
                 val preferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE)
                 notificationTime = System.currentTimeMillis()
+                lastBranch = branch.id
                 with(preferences.edit()) {
                     putLong("NotificationTime", notificationTime!!)
+                    putDouble("LastBranch", branch.id)
                     commit()
                 }
                 NotificationHandler(context).createNotification(branch.name, branch.discounts)
+
             }
         }
     }

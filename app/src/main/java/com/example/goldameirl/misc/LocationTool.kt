@@ -8,6 +8,6 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 fun centerCameraOnLocation(mapboxMap: MapboxMap, location: Location) {
     mapboxMap.animateCamera(
         CameraUpdateFactory
-            .newLatLngZoom(LatLng(location.latitude, location.longitude), 13.0)
+            .newLatLngZoom(LatLng(location.latitude, location.longitude), 14.0)
     )
 }

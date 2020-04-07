@@ -35,10 +35,8 @@ class NotificationHandler(val context: Context) {
             .setSmallIcon(R.drawable.icon_branch)
             .setContentTitle(title)
             .setContentText(content)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setGroup(GROUP_ID)
             .setContentIntent(pendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
 
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
@@ -54,10 +52,12 @@ class NotificationHandler(val context: Context) {
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val descriptionText = "Main notification channel"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_HIGH
 
             val channel = NotificationChannel(CHANNEL_ID, CHANNEL_ID, importance).apply {
                 description = descriptionText
+                enableVibration(true)
+
             }
 
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as

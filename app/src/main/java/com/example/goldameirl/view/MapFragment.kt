@@ -2,6 +2,7 @@ package com.example.goldameirl.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
@@ -70,6 +71,7 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
 
         val preferences = activity!!.getSharedPreferences("pref", Context.MODE_PRIVATE)
         viewModel.notificationTime = preferences.getLong(NOTIFICATION_TIME, 0L)
+        viewModel.lastBranch = preferences.getDouble("LastBranch", 0.0)
 
         mapView = binding.mapView
         binding.viewModel = viewModel
@@ -97,7 +99,7 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
         this.mapboxMap = mapboxMap
         callback = LocationChangeListeningCallback()
 
-        mapboxMap.setStyle(Style.MAPBOX_STREETS) {
+        mapboxMap.setStyle(Style.DARK) {
             viewModel.branches.observe(viewLifecycleOwner, Observer { branches ->
                 branches.forEach { branch ->
                     mapboxMap.addMarker(
@@ -234,5 +236,6 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
         mapView.onSaveInstanceState(outState)
     }
 
-
+    private fun SharedPreferences.getDouble(key: String, default: Double) =
+        java.lang.Double.longBitsToDouble(getLong(key, java.lang.Double.doubleToRawLongBits(default)))
 }
