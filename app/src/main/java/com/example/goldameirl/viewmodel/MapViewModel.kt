@@ -1,6 +1,5 @@
 package com.example.goldameirl.viewmodel
 
-import android.app.AlarmManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.location.Location
@@ -22,22 +21,17 @@ class MapViewModel(
 ) : ViewModel() {
     private val viewModelJob = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+    private val branchManager: BranchManager = BranchManager()
+    var notificationTime: Long? = 0L
+    var lastBranch: Double = 0.0
 
     private val _toNotifications = MutableLiveData<Boolean>()
     val toNotifications: LiveData<Boolean>
         get() = _toNotifications
 
-    val branchManager: BranchManager = BranchManager()
-
     private val _branches = MutableLiveData<List<Branch>>()
     val branches: LiveData<List<Branch>>
         get() = _branches
-
-    private fun SharedPreferences.Editor.putDouble(key: String, double: Double) =
-        putLong(key, java.lang.Double.doubleToRawLongBits(double))
-
-    var notificationTime: Long? = 0L
-    var lastBranch: Double = 0.0
 
     init {
         coroutineScope.launch {
@@ -58,7 +52,6 @@ class MapViewModel(
                     commit()
                 }
                 NotificationHandler(context).createNotification(branch.name, branch.discounts)
-
             }
         }
     }
@@ -79,4 +72,7 @@ class MapViewModel(
         super.onCleared()
         viewModelJob.cancel()
     }
+
+    private fun SharedPreferences.Editor.putDouble(key: String, double: Double) =
+        putLong(key, java.lang.Double.doubleToRawLongBits(double))
 }

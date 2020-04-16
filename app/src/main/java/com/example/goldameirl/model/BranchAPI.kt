@@ -21,7 +21,6 @@ private val retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
     .build()
 
-
 interface BranchAPIService {
     @GET("branches.json")
     fun getBranches():

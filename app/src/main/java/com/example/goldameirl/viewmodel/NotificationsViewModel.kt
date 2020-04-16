@@ -1,20 +1,20 @@
 package com.example.goldameirl.viewmodel
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goldameirl.databinding.NotificationListItemBinding
 import com.example.goldameirl.model.Notification
-import com.example.goldameirl.model.db.NotificationDAO
+import com.example.goldameirl.model.db.DB
 
 class NotificationsViewModel(
-    db: NotificationDAO
+    context: Context
 ) : ViewModel() {
-    val notifications = db.getAll()
+    val notifications = DB.getInstance(context)?.notificationDAO?.getAll()
 
     class NotificationAdapter :
         ListAdapter<Notification, NotificationAdapter.ViewHolder>(NotificationDiffCallBack()) {

@@ -1,11 +1,8 @@
 package com.example.goldameirl.viewmodel
 
 import android.content.Context
-import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.goldameirl.model.db.DB
-import com.mapbox.mapboxsdk.maps.MapboxMap
 import java.lang.IllegalArgumentException
 
 class MapViewModelFactory(

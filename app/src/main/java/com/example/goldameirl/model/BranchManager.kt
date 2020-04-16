@@ -5,7 +5,6 @@ import kotlinx.coroutines.*
 import java.lang.Exception
 
 class BranchManager() {
-
     fun isBranchIn500(location: Location, branch: Branch): Boolean {
         val branchLocation = Location("branch")
         branchLocation.latitude = branch.latitude
@@ -21,7 +20,6 @@ class BranchManager() {
             try {
                 listResult = getBranchesDeferred.await()
             } catch (e: Exception) { }
-
             listResult
         }
     }
