@@ -1,24 +1,31 @@
 package com.example.goldameirl.viewmodel
 
+import android.content.Context
+import android.content.SharedPreferences
+import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.goldameirl.misc.NotificationHandler
 import com.example.goldameirl.model.Branch
-import com.example.goldameirl.model.BranchAPI
+import com.example.goldameirl.model.BranchManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.lang.Exception
 
-class MapViewModel: ViewModel() {
-    // The internal MutableLiveData String that stores the most recent response
+const val NOTIFICATION_INTERVAL = 300000L
+
+class MapViewModel(
+    private val context: Context
+) : ViewModel() {
+    private val viewModelJob = Job()
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + viewModelJob)
+    private val branchManager: BranchManager = BranchManager()
+    var notificationTime: Long? = 0L
+    var lastBranch: Double = 0.0
+
     private val _toNotifications = MutableLiveData<Boolean>()
-
-    // The external immutable LiveData for the response String
     val toNotifications: LiveData<Boolean>
         get() = _toNotifications
 
@@ -26,29 +33,31 @@ class MapViewModel: ViewModel() {
     val branches: LiveData<List<Branch>>
         get() = _branches
 
-    private var viewModelJob = Job()
-
-    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
-
-    /**
-     * Call getMarsRealEstateProperties() on init so we can display status immediately.
-     */
     init {
-        getBranches()
+        coroutineScope.launch {
+            _branches.value = branchManager.getBranches()
+        }
     }
 
-    /**
-     * Sets the value of the status LiveData to the Mars API status.
-     */
-    private fun getBranches() {
-        coroutineScope.launch {
-            val getBranchesDeferred = BranchAPI.retrofitService.getBranches()
-            try {
-                val listResult = getBranchesDeferred.await()
-
-                _branches.value = listResult
-            } catch (e: Exception) { }
+    fun checkBranchDistance(location: Location) {
+        branches.value?.forEach { branch ->
+            if (branchManager.isBranchIn500(location, branch) && (hasTimePast()
+                || branch.id != lastBranch)) {
+                val preferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE)
+                notificationTime = System.currentTimeMillis()
+                lastBranch = branch.id
+                with(preferences.edit()) {
+                    putLong("NotificationTime", notificationTime!!)
+                    putDouble("LastBranch", branch.id)
+                    commit()
+                }
+                NotificationHandler(context).createNotification(branch.name, branch.discounts)
+            }
         }
+    }
+
+    private fun hasTimePast(): Boolean {
+        return (System.currentTimeMillis() - notificationTime!!) >= NOTIFICATION_INTERVAL
     }
 
     fun onNotificationsClick() {
@@ -63,4 +72,7 @@ class MapViewModel: ViewModel() {
         super.onCleared()
         viewModelJob.cancel()
     }
+
+    private fun SharedPreferences.Editor.putDouble(key: String, double: Double) =
+        putLong(key, java.lang.Double.doubleToRawLongBits(double))
 }

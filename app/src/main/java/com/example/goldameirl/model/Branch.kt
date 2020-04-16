@@ -7,6 +7,5 @@ data class Branch(
     val latitude: Double,
     val longtitude: Double,
     val phone: String,
-    val discounts: String){
-    var symbolId: Long? = null
-}
+    val discounts: String
+)
