@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -21,7 +20,6 @@ import com.example.goldameirl.misc.TOKEN
 import com.example.goldameirl.misc.centerCameraOnLocation
 import com.example.goldameirl.viewmodel.*
 import com.mapbox.android.core.location.*
-import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
@@ -39,14 +37,13 @@ import com.mapbox.mapboxsdk.maps.Style
 const val NOTIFICATION_TIME = "NotificationTime"
 const val LAST_BRANCH = "LastBranch"
 
-class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
+class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var application: Context
     lateinit var mapView: MapView
     lateinit var viewModel: MapViewModel
     var location: Location = Location("myLocation")
     private lateinit var locationEngine: LocationEngine
     private lateinit var callback: LocationChangeListeningCallback
-    private var permissionsManager: PermissionsManager = PermissionsManager(this)
     lateinit var mapboxMap: MapboxMap
 
     override fun onCreateView(
@@ -110,7 +107,7 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun enableLocationComponent(loadedMapStyle: Style) {
-        if (PermissionsManager.areLocationPermissionsGranted(application)) {
+            if (PermissionsManager.areLocationPermissionsGranted(application)) {
             val customLocationComponentOptions = LocationComponentOptions.builder(application)
                 .trackingGesturesManagement(true)
                 .build()
@@ -127,9 +124,6 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
                 renderMode = RenderMode.COMPASS
             }
             initLocationEngine()
-        } else {
-            permissionsManager = PermissionsManager(this)
-            permissionsManager.requestLocationPermissions(activity)
         }
     }
 
@@ -161,30 +155,6 @@ class MapFragment : Fragment(), PermissionsListener, OnMapReadyCallback {
         }
 
         override fun onFailure(exception: Exception) {}
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    override fun onExplanationNeeded(permissionsToExplain: List<String>) {
-        Toast.makeText(application, R.string.user_location_permission_explanation, Toast.LENGTH_LONG)
-            .show()
-    }
-
-    override fun onPermissionResult(granted: Boolean) {
-        if (granted) {
-            enableLocationComponent(mapboxMap.style!!)
-        } else {
-            Toast.makeText(
-                application, R.string.user_location_permission_not_granted, Toast.LENGTH_LONG
-            ).show()
-            activity?.finish()
-        }
     }
 
     override fun onResume() {
