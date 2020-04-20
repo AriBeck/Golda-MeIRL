@@ -1,63 +1,46 @@
 package com.example.goldameirl.viewmodel
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.goldameirl.misc.NotificationHandler
-import com.example.goldameirl.model.Branch
 import com.example.goldameirl.model.BranchManager
+import com.example.goldameirl.model.BranchRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-
-const val NOTIFICATION_INTERVAL = 300000L
+import java.lang.Exception
 
 class MapViewModel(
-    private val context: Context
+    context: Context
 ) : ViewModel() {
     private val viewModelJob = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.Main + viewModelJob)
-    private val branchManager: BranchManager = BranchManager()
-    var notificationTime: Long? = 0L
-    var lastBranch: Double = 0.0
+    private val repository = BranchRepository(context)
+    val branchManager: BranchManager = BranchManager(context)
 
     private val _toNotifications = MutableLiveData<Boolean>()
     val toNotifications: LiveData<Boolean>
         get() = _toNotifications
 
-    private val _branches = MutableLiveData<List<Branch>>()
-    val branches: LiveData<List<Branch>>
-        get() = _branches
-
     init {
+        refreshDataFromRepository()
+    }
+
+    val branches = repository.branches
+
+    private fun refreshDataFromRepository() {
         coroutineScope.launch {
-            _branches.value = branchManager.getBranches()
+            try {
+                repository.refreshBranches()
+            } catch (e: Exception) {}
         }
     }
 
     fun checkBranchDistance(location: Location) {
-        branches.value?.forEach { branch ->
-            if (branchManager.isBranchIn500(location, branch) && (hasTimePast()
-                || branch.id != lastBranch)) {
-                val preferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE)
-                notificationTime = System.currentTimeMillis()
-                lastBranch = branch.id
-                with(preferences.edit()) {
-                    putLong("NotificationTime", notificationTime!!)
-                    putDouble("LastBranch", branch.id)
-                    commit()
-                }
-                NotificationHandler(context).createNotification(branch.name, branch.discounts)
-            }
-        }
-    }
-
-    private fun hasTimePast(): Boolean {
-        return (System.currentTimeMillis() - notificationTime!!) >= NOTIFICATION_INTERVAL
+        branchManager.checkBranchDistance(location, branches?.value)
     }
 
     fun onNotificationsClick() {
@@ -72,7 +55,4 @@ class MapViewModel(
         super.onCleared()
         viewModelJob.cancel()
     }
-
-    private fun SharedPreferences.Editor.putDouble(key: String, double: Double) =
-        putLong(key, java.lang.Double.doubleToRawLongBits(double))
 }

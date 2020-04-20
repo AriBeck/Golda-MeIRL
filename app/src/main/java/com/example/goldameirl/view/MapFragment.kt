@@ -61,8 +61,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         ).get(MapViewModel::class.java)
 
         val preferences = application.getSharedPreferences("pref", Context.MODE_PRIVATE)
-        viewModel.notificationTime = preferences.getLong(NOTIFICATION_TIME, 0L)
-        viewModel.lastBranch = preferences.getDouble(LAST_BRANCH, 0.0)
+        viewModel.branchManager.notificationTime = preferences.getLong(NOTIFICATION_TIME, 0L)
+        viewModel.branchManager.lastBranch = preferences.getDouble(LAST_BRANCH, 0.0)
 
         mapView = binding.mapView
         binding.viewModel = viewModel
@@ -89,11 +89,11 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         callback = LocationChangeListeningCallback()
 
         mapboxMap.setStyle(Style.DARK) {
-            viewModel.branches.observe(viewLifecycleOwner, Observer { branches ->
+            viewModel.branches?.observe(viewLifecycleOwner, Observer { branches ->
                 branches.forEach { branch ->
                     mapboxMap.addMarker(
                         MarkerOptions()
-                            .position(LatLng(branch.latitude, branch.longtitude))
+                            .position(LatLng(branch.latitude, branch.longitude))
                             .setIcon(IconFactory.getInstance(application).fromResource(R.drawable.icon_branch))
                             .title(branch.name)
                             .setSnippet(branch.address)
