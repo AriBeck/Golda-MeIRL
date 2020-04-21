@@ -39,7 +39,7 @@
 
             <TextView
                 android:id="@+id/title_text"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:layout_marginStart="8dp"
@@ -54,29 +54,32 @@
 
             <TextView
                 android:id="@+id/content_text"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:fontFamily="@font/ribeye_marrow"
                 android:text="@{notification.content}"
                 android:textColor="@color/primaryTextColor"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/time_stamp"
                 app:layout_constraintStart_toEndOf="@+id/notification_icon"
                 app:layout_constraintTop_toBottomOf="@+id/title_text"
-                tools:text="2+2 on all ice creams" />
+                tools:text="1/2 kilo ice cream for 30 nis only" />
 
             <TextView
                 android:id="@+id/time_stamp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_marginEnd="8dp"
                 android:fontFamily="@font/ribeye_marrow"
+                android:gravity="center"
                 android:textColor="@color/primaryTextColor"
+                android:textSize="12sp"
                 app:dateTime="@{notification}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/title_text"
-                tools:text="05/04 12:00" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Monday\n20-04-2020\n12:00" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

@@ -36,7 +36,15 @@ class NotificationsFragment : Fragment() {
 
         viewModel.notifications?.observe(viewLifecycleOwner, Observer { list ->
             list?.let {
-                adapter.submitList(list)
+                if(it.isEmpty()) {
+                    binding.notificationList.visibility = View.GONE
+                    binding.notificationsEmpty.visibility = View.VISIBLE
+                }
+                else {
+                    adapter.submitList(it)
+                    binding.notificationsEmpty.visibility = View.GONE
+                    binding.notificationList.visibility = View.VISIBLE
+                }
             }
         })
         return binding.root

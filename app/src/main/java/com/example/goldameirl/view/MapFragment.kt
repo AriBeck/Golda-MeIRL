@@ -144,13 +144,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             result?.lastLocation ?: return
 
             if (result.lastLocation != null) {
-                location.latitude = result.lastLocation?.latitude!!
-                location.longitude = result.lastLocation?.longitude!!
-
-                if (result.lastLocation != null) {
-                    mapboxMap.locationComponent.forceLocationUpdate(result.lastLocation)
-                    viewModel.checkBranchDistance(location)
-                }
+                    val newLocation = Location(result.lastLocation)
+                    if (location.distanceTo(newLocation) >= 250) {
+                        centerCameraOnLocation(mapboxMap, newLocation)
+                    }
+                    mapboxMap.locationComponent.forceLocationUpdate(newLocation)
+                    viewModel.checkBranchDistance(newLocation)
+                    location = newLocation
             }
         }
 
