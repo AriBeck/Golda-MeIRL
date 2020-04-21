@@ -14,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentMapBinding
 import com.example.goldameirl.misc.TOKEN
@@ -39,7 +40,7 @@ const val LAST_BRANCH = "LastBranch"
 
 class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var application: Context
-    lateinit var mapView: MapView
+    private var mapView: MapView? = null
     lateinit var viewModel: MapViewModel
     var location: Location = Location("myLocation")
     private lateinit var locationEngine: LocationEngine
@@ -60,17 +61,21 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             )
         ).get(MapViewModel::class.java)
 
-        val preferences = application.getSharedPreferences("pref", Context.MODE_PRIVATE)
-        viewModel.branchManager.notificationTime = preferences.getLong(NOTIFICATION_TIME, 0L)
-        viewModel.branchManager.lastBranch = preferences.getDouble(LAST_BRANCH, 0.0)
+        val preferences = PreferenceManager.getDefaultSharedPreferences(application)
+        viewModel.branchManager.apply {
+            notificationTime = preferences.getLong(NOTIFICATION_TIME, 0L)
+            lastBranch = preferences.getDouble(LAST_BRANCH, 1.0)
+            interval = preferences.getInt("time", 1).times(5).toLong()
+            radius = preferences.getInt("radius", 5).times(100)
+        }
 
         mapView = binding.mapView
         binding.viewModel = viewModel
         binding.locationButton.setOnClickListener {
             centerCameraOnLocation(mapboxMap, location)
         }
-        mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync(this)
+        mapView?.onCreate(savedInstanceState)
+        mapView?.getMapAsync(this)
 
         viewModel.toNotifications.observe(viewLifecycleOwner, Observer { toNotifications ->
             if (toNotifications) {
@@ -79,6 +84,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         .mapFragmentToNotificationsFragment()
                 )
                 viewModel.onNotificationsClicked()
+            }
+        })
+
+        viewModel.toSettings.observe(viewLifecycleOwner, Observer { toSettings ->
+            if (toSettings) {
+                this.findNavController().navigate(
+                    MapFragmentDirections
+                    .mapFragmentToSettingsFragment()
+                )
+                viewModel.onSettingsClicked()
             }
         })
         return binding.root
@@ -145,7 +160,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
             if (result.lastLocation != null) {
                     val newLocation = Location(result.lastLocation)
-                    if (location.distanceTo(newLocation) >= 250) {
+                    if (location.distanceTo(newLocation) >= 100) {
                         centerCameraOnLocation(mapboxMap, newLocation)
                     }
                     mapboxMap.locationComponent.forceLocationUpdate(newLocation)
@@ -159,37 +174,37 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
-        mapView.onResume()
+        mapView?.onResume()
     }
 
     override fun onStart() {
         super.onStart()
-        mapView.onStart()
+        mapView?.onStart()
     }
 
     override fun onStop() {
         super.onStop()
-        mapView.onStop()
+        mapView?.onStop()
     }
 
     override fun onPause() {
         super.onPause()
-        mapView.onPause()
+        mapView?.onPause()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        mapView.onLowMemory()
+        mapView?.onLowMemory()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mapView.onDestroy()
+        mapView?.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        mapView.onSaveInstanceState(outState)
+        mapView?.onSaveInstanceState(outState)
     }
 
     private fun SharedPreferences.getDouble(key: String, default: Double) =

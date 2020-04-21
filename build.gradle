@@ -20,6 +20,7 @@ buildscript {
         version_recyclerview = "28.0.0"
         version_mapBox = "9.0.0"
         version_recyclerview = "28.0.0"
+        version_preference = "1.1.1"
     }
 
     repositories {

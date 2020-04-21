@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:key="preferences_category"
+        app:title="Notification Preferences">
+
+        <SeekBarPreference
+            app:key="radius"
+            app:title="Radius"
+            android:max="25"
+            app:min="1"
+            app:defaultValue="5"/>
+
+        <SeekBarPreference
+            app:key="time"
+            app:title="Time Interval"
+            android:max="12"
+            app:min="1"
+            app:defaultValue="1"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

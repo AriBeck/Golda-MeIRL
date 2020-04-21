@@ -25,6 +25,10 @@ class MapViewModel(
     val toNotifications: LiveData<Boolean>
         get() = _toNotifications
 
+    private val _toSettings = MutableLiveData<Boolean>()
+    val toSettings: LiveData<Boolean>
+        get() = _toSettings
+
     init {
         refreshDataFromRepository()
     }
@@ -49,6 +53,14 @@ class MapViewModel(
 
     fun onNotificationsClicked() {
         _toNotifications.value = false
+    }
+
+    fun onSettingsClick() {
+        _toSettings.value = true
+    }
+
+    fun onSettingsClicked() {
+        _toSettings.value = false
     }
 
     override fun onCleared() {
