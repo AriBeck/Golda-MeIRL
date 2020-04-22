@@ -29,6 +29,14 @@ class NotificationHandler(val context: Context) {
         }
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
 
+        val shareIntent = Intent()
+        shareIntent.apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, "Hey check out this great deal!\n" +
+                    "$content at $title!")
+            type = "text/plain"
+        }
+        val sharePendingIntent = PendingIntent.getActivity(context, 0, shareIntent, 0)
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.icon_branch)
             .setContentTitle(title)
@@ -36,6 +44,7 @@ class NotificationHandler(val context: Context) {
             .setGroup(GROUP_ID)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+            .addAction(android.R.drawable.ic_menu_share, "Share", sharePendingIntent)
             .build()
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
 

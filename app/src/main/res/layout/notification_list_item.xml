@@ -26,8 +26,8 @@
 
             <ImageView
                 android:id="@+id/notification_icon"
-                android:layout_width="64dp"
-                android:layout_height="60dp"
+                android:layout_width="46dp"
+                android:layout_height="59dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
@@ -64,22 +64,37 @@
                 app:layout_constraintEnd_toStartOf="@+id/time_stamp"
                 app:layout_constraintStart_toEndOf="@+id/notification_icon"
                 app:layout_constraintTop_toBottomOf="@+id/title_text"
+                app:layout_constraintVertical_bias="0.0"
                 tools:text="1/2 kilo ice cream for 30 nis only" />
 
             <TextView
                 android:id="@+id/time_stamp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
                 android:fontFamily="@font/ribeye_marrow"
                 android:gravity="center"
                 android:textColor="@color/primaryTextColor"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 app:dateTime="@{notification}"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Monday\n20-04-2020\n12:00" />
+
+            <Button
+                android:id="@+id/share_button"
+                android:layout_width="42dp"
+                android:layout_height="17dp"
+                android:background="#34DAD6D6"
+                android:text="SHARE"
+                android:textColor="@color/primaryTextColor"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.52"
+                app:layout_constraintStart_toEndOf="@+id/content_text"
+                app:layout_constraintTop_toBottomOf="@+id/time_stamp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

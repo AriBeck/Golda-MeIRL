@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.location.Location
 import android.os.Bundle
-import android.os.Looper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -20,7 +19,6 @@ import com.example.goldameirl.databinding.FragmentMapBinding
 import com.example.goldameirl.misc.TOKEN
 import com.example.goldameirl.misc.centerCameraOnLocation
 import com.example.goldameirl.viewmodel.*
-import com.mapbox.android.core.location.*
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
@@ -43,8 +41,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var mapView: MapView? = null
     lateinit var viewModel: MapViewModel
     var location: Location = Location("myLocation")
-    private lateinit var locationEngine: LocationEngine
-    private lateinit var callback: LocationChangeListeningCallback
     lateinit var mapboxMap: MapboxMap
 
     override fun onCreateView(
@@ -101,7 +97,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     override fun onMapReady(mapboxMap: MapboxMap) {
         this.mapboxMap = mapboxMap
-        callback = LocationChangeListeningCallback()
 
         mapboxMap.setStyle(Style.DARK) {
             viewModel.branches?.observe(viewLifecycleOwner, Observer { branches ->
@@ -117,6 +112,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             })
             enableLocationComponent(it)
             centerCameraOnLocation(mapboxMap, location)
+
+            viewModel.location.observe(viewLifecycleOwner, Observer<Location> { newLocation ->
+                mapboxMap.locationComponent.forceLocationUpdate(newLocation)
+                if (location.distanceTo(newLocation) >= 100) {
+                    centerCameraOnLocation(mapboxMap, newLocation)
+                }
+                location = newLocation
+            })
         }
     }
 
@@ -138,38 +141,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 cameraMode = CameraMode.TRACKING
                 renderMode = RenderMode.COMPASS
             }
-            initLocationEngine()
         }
-    }
-
-    private fun initLocationEngine() {
-        locationEngine = LocationEngineProvider.getBestLocationEngine(application)
-        val request = LocationEngineRequest
-            .Builder(1000)
-            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
-            .setMaxWaitTime(5000)
-            .build()
-        locationEngine.requestLocationUpdates(request, callback, Looper.getMainLooper())
-        locationEngine.getLastLocation(callback)
-    }
-
-    private inner class LocationChangeListeningCallback :
-        LocationEngineCallback<LocationEngineResult> {
-        override fun onSuccess(result: LocationEngineResult?) {
-            result?.lastLocation ?: return
-
-            if (result.lastLocation != null) {
-                    val newLocation = Location(result.lastLocation)
-                    if (location.distanceTo(newLocation) >= 100) {
-                        centerCameraOnLocation(mapboxMap, newLocation)
-                    }
-                    mapboxMap.locationComponent.forceLocationUpdate(newLocation)
-                    viewModel.checkBranchDistance(newLocation)
-                    location = newLocation
-            }
-        }
-
-        override fun onFailure(exception: Exception) {}
     }
 
     override fun onResume() {

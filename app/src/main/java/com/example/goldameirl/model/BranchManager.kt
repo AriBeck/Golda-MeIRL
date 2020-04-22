@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.location.Location
 import android.preference.PreferenceManager
 import com.example.goldameirl.misc.NotificationHandler
+import com.mapbox.android.core.location.LocationEngineProvider
 import java.util.concurrent.TimeUnit
 
 class BranchManager(private val context: Context) {
@@ -13,14 +14,16 @@ class BranchManager(private val context: Context) {
     var notificationTime: Long? = 0L
     var lastBranch: Double = 0.0
 
-    fun isBranchIn500(location: Location, branch: Branch): Boolean {
+
+    private fun isBranchIn500(location: Location, branch: Branch): Boolean {
         val branchLocation = Location("branch")
         branchLocation.latitude = branch.latitude
         branchLocation.longitude = branch.longitude
         return location.distanceTo(branchLocation) <= radius ?: 500
     }
 
-    fun checkBranchDistance(location: Location, branches: List<Branch>?) {
+    fun checkBranchDistance(location: Location?, branches: List<Branch>?) {
+        location ?: return
         branches?.forEach { branch ->
             if (isBranchIn500(location, branch) && (hasTimePast()
                         || branch.id != lastBranch)) {

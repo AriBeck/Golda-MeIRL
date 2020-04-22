@@ -1,6 +1,7 @@
 package com.example.goldameirl.viewmodel
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModel
@@ -16,7 +17,7 @@ class NotificationsViewModel(
 ) : ViewModel() {
     val notifications = DB.getInstance(context)?.notificationDAO?.getAll()
 
-    class NotificationAdapter :
+    class NotificationAdapter() :
         ListAdapter<Notification, NotificationAdapter.ViewHolder>(NotificationDiffCallBack()) {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -33,6 +34,17 @@ class NotificationsViewModel(
             RecyclerView.ViewHolder(binding.root) {
             fun bind(item: Notification) {
                 binding.notification = item
+                binding.shareButton.setOnClickListener {
+                    val shareIntent = Intent()
+                    shareIntent.apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(
+                            Intent.EXTRA_TEXT, "Hey check out this great deal!\n" +
+                                    "${item.content} at ${item.title}!")
+                        type = "text/plain"
+                    }
+                    binding.root.context.startActivity(Intent.createChooser(shareIntent, "Send To"))
+                }
                 binding.executePendingBindings()
             }
 
