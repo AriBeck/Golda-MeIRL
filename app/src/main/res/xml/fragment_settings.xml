@@ -4,7 +4,7 @@
 
     <PreferenceCategory
         app:key="preferences_category"
-        app:title="Notification Preferences">
+        app:title="Notification Settings">
 
         <SeekBarPreference
             app:key="radius"

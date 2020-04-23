@@ -43,7 +43,7 @@ class NotificationsViewModel(
                                     "${item.content} at ${item.title}!")
                         type = "text/plain"
                     }
-                    binding.root.context.startActivity(Intent.createChooser(shareIntent, "Send To"))
+                    binding.root.context.startActivity(shareIntent)
                 }
                 binding.executePendingBindings()
             }

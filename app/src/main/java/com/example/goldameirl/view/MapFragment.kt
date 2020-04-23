@@ -9,7 +9,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -40,6 +42,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var application: Context
     private var mapView: MapView? = null
     lateinit var viewModel: MapViewModel
+    lateinit var binding: FragmentMapBinding
+    lateinit var drawerLayout: DrawerLayout
     var location: Location = Location("myLocation")
     lateinit var mapboxMap: MapboxMap
 
@@ -48,9 +52,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         savedInstanceState: Bundle?): View? {
         application = requireNotNull(activity).application
         Mapbox.getInstance(application, TOKEN)
-        val binding = DataBindingUtil.inflate<FragmentMapBinding>(
+        binding = DataBindingUtil.inflate<FragmentMapBinding>(
             inflater, R.layout.fragment_map, container, false
         )
+
         viewModel = ViewModelProvider(
             this, MapViewModelFactory(
                 application
@@ -64,11 +69,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             interval = preferences.getInt("time", 1).times(5).toLong()
             radius = preferences.getInt("radius", 5).times(100)
         }
-
         mapView = binding.mapView
         binding.viewModel = viewModel
+        drawerLayout = activity?.findViewById(R.id.drawer_layout)!!
         binding.locationButton.setOnClickListener {
             centerCameraOnLocation(mapboxMap, location)
+        }
+        binding.menuButton.setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
         }
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync(this)
@@ -83,15 +91,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         })
 
-        viewModel.toSettings.observe(viewLifecycleOwner, Observer { toSettings ->
-            if (toSettings) {
-                this.findNavController().navigate(
-                    MapFragmentDirections
-                    .mapFragmentToSettingsFragment()
-                )
-                viewModel.onSettingsClicked()
-            }
-        })
         return binding.root
     }
 
@@ -143,6 +142,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         }
     }
+
+
 
     override fun onResume() {
         super.onResume()

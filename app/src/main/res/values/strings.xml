@@ -7,4 +7,6 @@
     <string name="user_location_permission_explanation">Allow for location tracking</string>
     <string name="notifications_title">Notifications</string>
     <string name="notifications_empty">No Notifications</string>
+    <string name="branches_title">Branches</string>
+    <string name="branches_empty">No Branches Loaded</string>
 </resources>

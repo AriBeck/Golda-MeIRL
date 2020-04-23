@@ -30,10 +30,6 @@ class MapViewModel(
     val toNotifications: LiveData<Boolean>
         get() = _toNotifications
 
-    private val _toSettings = MutableLiveData<Boolean>()
-    val toSettings: LiveData<Boolean>
-        get() = _toSettings
-
     private val _location = MutableLiveData<Location>()
     val location: LiveData<Location>
         get() = _location
@@ -63,14 +59,6 @@ class MapViewModel(
 
     fun onNotificationsClicked() {
         _toNotifications.value = false
-    }
-
-    fun onSettingsClick() {
-        _toSettings.value = true
-    }
-
-    fun onSettingsClicked() {
-        _toSettings.value = false
     }
 
     private fun initLocationEngine() {

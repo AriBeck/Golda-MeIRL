@@ -17,7 +17,7 @@
 
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/settings_button"
+            android:id="@+id/menu_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -25,8 +25,7 @@
             android:backgroundTint="@color/secondaryColor"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/icon_settings_button"
-            android:onClick="@{() -> viewModel.onSettingsClick()}"
+            android:src="@drawable/icon_menu_foreground"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:maxImageSize="50dp" />

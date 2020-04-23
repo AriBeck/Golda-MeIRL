@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.location.Location
 import android.preference.PreferenceManager
 import com.example.goldameirl.misc.NotificationHandler
-import com.mapbox.android.core.location.LocationEngineProvider
 import java.util.concurrent.TimeUnit
 
 class BranchManager(private val context: Context) {

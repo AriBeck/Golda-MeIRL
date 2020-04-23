@@ -11,11 +11,28 @@
         <action
             android:id="@+id/mapFragment_to_notificationsFragment"
             app:destination="@id/notificationsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
             app:popUpTo="@id/mapFragment"
             app:popUpToInclusive="false" />
         <action
             android:id="@+id/mapFragment_to_settingsFragment"
             app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:popUpTo="@id/mapFragment"
+            app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/mapFragment_to_branchesFragment"
+            app:destination="@id/branchesFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
             app:popUpTo="@id/mapFragment"
             app:popUpToInclusive="false" />
     </fragment>
@@ -28,4 +45,8 @@
         android:id="@+id/settingsFragment"
         android:name="com.example.goldameirl.view.SettingsFragment"
         android:label="SettingsFragment" />
+    <fragment
+        android:id="@+id/branchesFragment"
+        android:name="com.example.goldameirl.view.BranchesFragment"
+        android:label="BranchesFragment" />
 </navigation>
