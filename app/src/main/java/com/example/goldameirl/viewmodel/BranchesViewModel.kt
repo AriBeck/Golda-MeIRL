@@ -14,15 +14,14 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goldameirl.databinding.BranchesListItemBinding
 import com.example.goldameirl.model.Branch
-import com.example.goldameirl.model.db.DB
+import com.example.goldameirl.model.BranchRepository
 
 class BranchesViewModel(val context: Context, val location: Location) : ViewModel() {
-    var dbBranches = DB.getInstance(context)?.branchDAO!!.getBranches()
-
+    var dbBranches = BranchRepository.getInstance(context)?.branches
     val branches = MediatorLiveData<List<Branch>>()
 
     init {
-        branches.addSource(dbBranches) { result ->
+        branches.addSource(dbBranches!!) { result ->
             result?.let {
                 branches.value = it
             }

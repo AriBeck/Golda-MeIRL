@@ -32,10 +32,12 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     private val _location = MutableLiveData<Location>()
     val location: LiveData<Location>
         get() = _location
+
     private lateinit var branchManager: BranchManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (!PermissionsManager.areLocationPermissionsGranted(application)) {
             permissionsManager.requestLocationPermissions(this)
         }
@@ -44,9 +46,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         navController = this.findNavController(R.id.nav_host_fragment)
         drawerLayout = binding.drawerLayout
         NavigationUI.setupWithNavController(binding.navView, navController)
-
         branchManager = BranchManager(applicationContext)
-
         initLocationEngine()
     }
 

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.location.Location
 import android.preference.PreferenceManager
+import androidx.lifecycle.LiveData
 import com.example.goldameirl.misc.NotificationHandler
 import java.util.concurrent.TimeUnit
 
@@ -12,9 +13,7 @@ class BranchManager(private val context: Context) {
     var radius: Int? = 500
     var notificationTime: Long? = 0L
     var lastBranch: Double = 0.0
-    val repository = BranchRepository(context)
-    val branches: List<Branch>? = repository.branches?.value
-
+    val branches: LiveData<List<Branch>>? = BranchRepository.getInstance(context)?.branches
 
     private fun isBranchIn500(location: Location, branch: Branch): Boolean {
         val branchLocation = Location("branch")
@@ -25,7 +24,7 @@ class BranchManager(private val context: Context) {
 
     fun checkBranchDistance(location: Location?) {
         location ?: return
-        branches?.forEach { branch ->
+        branches?.value?.forEach { branch ->
             if (isBranchIn500(location, branch) && (hasTimePast()
                         || branch.id != lastBranch)) {
                 val preferences = PreferenceManager.getDefaultSharedPreferences(context)
@@ -45,8 +44,6 @@ class BranchManager(private val context: Context) {
         return (System.currentTimeMillis() - notificationTime!!) >= TimeUnit.MILLISECONDS
             .convert(interval ?: 5L, TimeUnit.MINUTES)
     }
-
-
 
     private fun SharedPreferences.Editor.putDouble(key: String, double: Double) =
         putLong(key, java.lang.Double.doubleToRawLongBits(double))
