@@ -12,6 +12,8 @@ class BranchManager(private val context: Context) {
     var radius: Int? = 500
     var notificationTime: Long? = 0L
     var lastBranch: Double = 0.0
+    val repository = BranchRepository(context)
+    val branches: List<Branch>? = repository.branches?.value
 
 
     private fun isBranchIn500(location: Location, branch: Branch): Boolean {
@@ -21,7 +23,7 @@ class BranchManager(private val context: Context) {
         return location.distanceTo(branchLocation) <= radius ?: 500
     }
 
-    fun checkBranchDistance(location: Location?, branches: List<Branch>?) {
+    fun checkBranchDistance(location: Location?) {
         location ?: return
         branches?.forEach { branch ->
             if (isBranchIn500(location, branch) && (hasTimePast()

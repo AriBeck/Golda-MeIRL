@@ -23,20 +23,21 @@ class MapViewModel(
     private val repository = BranchRepository(context)
 
     private lateinit var locationEngine: LocationEngine
-    private val callback = LocationChangeListeningCallback()
+    //private val callback = LocationChangeListeningCallback()
     val branchManager: BranchManager = BranchManager(context)
 
     private val _toNotifications = MutableLiveData<Boolean>()
     val toNotifications: LiveData<Boolean>
         get() = _toNotifications
 
-    private val _location = MutableLiveData<Location>()
-    val location: LiveData<Location>
-        get() = _location
+//    private val _location = MutableLiveData<Location>()
+//    val location: LiveData<Location>
+//        get() = _location
+    private val location = Location("myLocation")
 
     init {
         refreshDataFromRepository()
-        initLocationEngine()
+        //initLocationEngine()
     }
 
     val branches = repository.branches
@@ -50,7 +51,7 @@ class MapViewModel(
     }
 
     fun checkBranchDistance(location: Location?) {
-        branchManager.checkBranchDistance(location, branches?.value)
+        branchManager.checkBranchDistance(location)
     }
 
     fun onNotificationsClick() {
@@ -61,29 +62,29 @@ class MapViewModel(
         _toNotifications.value = false
     }
 
-    private fun initLocationEngine() {
-        locationEngine = LocationEngineProvider.getBestLocationEngine(context)
-        val request = LocationEngineRequest
-            .Builder(1000)
-            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
-            .setMaxWaitTime(5000)
-            .build()
-        locationEngine.requestLocationUpdates(request, callback, Looper.myLooper())
-        locationEngine.getLastLocation(callback)
-    }
+//    private fun initLocationEngine() {
+//        locationEngine = LocationEngineProvider.getBestLocationEngine(context)
+//        val request = LocationEngineRequest
+//            .Builder(1000)
+//            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+//            .setMaxWaitTime(5000)
+//            .build()
+//        locationEngine.requestLocationUpdates(request, callback, Looper.myLooper())
+//        locationEngine.getLastLocation(callback)
+//    }
 
-    inner class LocationChangeListeningCallback :
-        LocationEngineCallback<LocationEngineResult> {
-        override fun onSuccess(result: LocationEngineResult?) {
-            if (result?.lastLocation != null) {
-            val newLocation = result.lastLocation
-            checkBranchDistance(newLocation)
-                _location.value = newLocation
-            }
-        }
-
-        override fun onFailure(exception: Exception) {}
-    }
+//    inner class LocationChangeListeningCallback :
+//        LocationEngineCallback<LocationEngineResult> {
+//        override fun onSuccess(result: LocationEngineResult?) {
+//            if (result?.lastLocation != null) {
+//            val newLocation = result.lastLocation
+//            checkBranchDistance(newLocation)
+//                _location.value = newLocation
+//            }
+//        }
+//
+//        override fun onFailure(exception: Exception) {}
+//    }
 
     override fun onCleared() {
         super.onCleared()

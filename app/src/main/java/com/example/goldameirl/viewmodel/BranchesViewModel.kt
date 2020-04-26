@@ -2,10 +2,12 @@ package com.example.goldameirl.viewmodel
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -14,9 +16,28 @@ import com.example.goldameirl.databinding.BranchesListItemBinding
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.model.db.DB
 
-class BranchesViewModel(val context: Context) : ViewModel() {
-    // TODO: Implement the ViewModel
-    val branches = DB.getInstance(context)?.branchDAO?.getBranches()
+class BranchesViewModel(val context: Context, val location: Location) : ViewModel() {
+    var dbBranches = DB.getInstance(context)?.branchDAO!!.getBranches()
+
+    val branches = MediatorLiveData<List<Branch>>()
+
+    init {
+        branches.addSource(dbBranches) { result ->
+            result?.let {
+                branches.value = it
+            }
+        }
+    }
+
+    fun onChipChecked(chip: View, isChecked: Boolean){
+        if ((chip.tag as String == "ABC") && isChecked) {
+           branches.value = branches.value?.sortByABC()
+        }
+
+        if ((chip.tag as String == "Location") && isChecked) {
+            branches.value = branches.value?.sortByLocation()
+        }
+    }
 
     class BranchAdapter() :
         ListAdapter<Branch, BranchAdapter.ViewHolder>(BranchDiffCallBack()) {
@@ -67,4 +88,20 @@ class BranchesViewModel(val context: Context) : ViewModel() {
             return oldItem.id == newItem.id
         }
     }
+
+    private fun List<Branch>.sortByABC(): List<Branch>? =
+        this.sortedBy { it.name }
+
+    private fun List<Branch>?.sortByLocation(): List<Branch>? =
+        this?.sortedBy {
+            location.distanceTo(branchLocation(it))
+        }
+
+    private fun branchLocation(branch: Branch): Location {
+        val branchLocation = Location("branchLocation")
+        branchLocation.longitude = branch.longitude
+        branchLocation.latitude = branch.latitude
+        return branchLocation
+    }
+
 }

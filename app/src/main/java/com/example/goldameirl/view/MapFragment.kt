@@ -46,10 +46,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     lateinit var drawerLayout: DrawerLayout
     var location: Location = Location("myLocation")
     lateinit var mapboxMap: MapboxMap
+    private lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
+        mainActivity = requireNotNull(activity) as MainActivity
         application = requireNotNull(activity).application
         Mapbox.getInstance(application, TOKEN)
         binding = DataBindingUtil.inflate<FragmentMapBinding>(
@@ -112,11 +114,12 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             enableLocationComponent(it)
             centerCameraOnLocation(mapboxMap, location)
 
-            viewModel.location.observe(viewLifecycleOwner, Observer<Location> { newLocation ->
+            mainActivity.location.observe(viewLifecycleOwner, Observer<Location> { newLocation ->
                 mapboxMap.locationComponent.forceLocationUpdate(newLocation)
                 if (location.distanceTo(newLocation) >= 100) {
                     centerCameraOnLocation(mapboxMap, newLocation)
                 }
+                viewModel.checkBranchDistance(newLocation)
                 location = newLocation
             })
         }
@@ -124,7 +127,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun enableLocationComponent(loadedMapStyle: Style) {
-            if (PermissionsManager.areLocationPermissionsGranted(application)) {
+        if (PermissionsManager.areLocationPermissionsGranted(application)) {
             val customLocationComponentOptions = LocationComponentOptions.builder(application)
                 .trackingGesturesManagement(true)
                 .build()

@@ -19,28 +19,63 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/ribeye_marrow"
+            android:gravity="center"
             android:text="@string/branches_title"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             android:textColor="@color/primaryTextColor"
-            android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-        
-        <ScrollView
+
+        <TextView
+            android:id="@+id/sort_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/header"
+            android:layout_marginStart="8dp"
+            android:text="Sort By:"
+            app:layout_constraintBottom_toTopOf="@+id/branches_list"
+            app:layout_constraintEnd_toStartOf="@+id/sort_view"
             app:layout_constraintStart_toStartOf="parent"
-            android:orientation="horizontal">
+            app:layout_constraintTop_toBottomOf="@id/header"
+            app:layout_constraintVertical_bias="0.49" />
+
+        <ScrollView
+            android:id="@+id/sort_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toEndOf="@id/sort_label"
+            app:layout_constraintTop_toBottomOf="@id/header">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/sort_list"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:padding="8dp"
                 app:singleLine="true"
-                app:singleSelection="true"
-                android:padding="8dp"/>
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/abc_chip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:tag="ABC"
+                    android:text="ABC"
+                    app:checkedIconVisible="true"
+                    app:chipBackgroundColor="@color/selected_highlight" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/location_chip"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:tag="Location"
+                    android:text="Location"
+                    app:checkedIconVisible="true"
+                    app:chipBackgroundColor="@color/selected_highlight" />
+
+            </com.google.android.material.chip.ChipGroup>
 
         </ScrollView>
 
@@ -48,31 +83,28 @@
             android:id="@+id/branches_empty"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:background="@color/primaryDarkColor"
             android:fontFamily="@font/ribeye_marrow"
+            android:gravity="center"
             android:text="@string/branches_empty"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-            android:background="@color/primaryDarkColor"
             android:textColor="@color/primaryTextColor"
-            android:gravity="center"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/header" />
-
+            app:layout_constraintTop_toBottomOf="@+id/sort_view" />
 
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/branches_list"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/header"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:stackFromEnd="true"
-            app:reverseLayout="true" />
+            app:layout_constraintTop_toBottomOf="@+id/sort_view" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
