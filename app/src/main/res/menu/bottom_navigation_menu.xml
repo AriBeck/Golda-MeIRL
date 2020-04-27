@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item
+        android:id="@+id/mapFragment"
+        android:icon="@drawable/icon_my_location_foreground"
+        android:title="@string/map_item" />
     <item
         android:id="@+id/branchesFragment"
         android:icon="@drawable/icon_branch"
-        android:title="Branches" />
+        android:title="@string/branches_item" />
     <item
         android:id="@+id/notificationsFragment"
         android:icon="@drawable/icon_notification_button_foreground"
-        android:title="Notifications" />
+        android:title="@string/notifications_item" />
     <item
         android:id="@+id/settingsFragment"
         android:icon="@drawable/icon_settings_button"
-        android:title="Settings" />
+        android:title="@string/settings_item" />
 </menu>

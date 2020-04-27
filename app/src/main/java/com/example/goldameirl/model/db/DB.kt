@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.model.Notification
 
-@Database(entities = [Notification::class, Branch::class], version = 1, exportSchema = false)
+@Database(entities = [Notification::class, Branch::class], version = 2, exportSchema = false)
 abstract class DB : RoomDatabase() {
     abstract val notificationDAO: NotificationDAO
     abstract val branchDAO: BranchDAO
@@ -22,8 +24,9 @@ abstract class DB : RoomDatabase() {
 
                 if (instance == null) {
                     instance = Room.databaseBuilder(
-                        context.applicationContext, DB::class.java, "app_database"
-                    ).build()
+                        context.applicationContext, DB::class.java, "app_database")
+                        .fallbackToDestructiveMigration()
+                        .build()
                     INSTANCE = instance
                 }
                 return instance

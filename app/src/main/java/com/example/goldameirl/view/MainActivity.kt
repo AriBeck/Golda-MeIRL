@@ -1,5 +1,6 @@
 package com.example.goldameirl.view
 
+import android.content.SharedPreferences
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -11,9 +12,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.*
 import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.setupWithNavController
+import androidx.preference.PreferenceManager
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.ActivityMainBinding
 import com.example.goldameirl.model.BranchManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.mapbox.android.core.location.*
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -38,6 +42,15 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        branchManager = BranchManager(applicationContext)
+        val preferences = PreferenceManager.getDefaultSharedPreferences(application)
+        branchManager.apply {
+            notificationTime = preferences.getLong(NOTIFICATION_TIME, 0L)
+            lastBranch = preferences.getDouble(LAST_BRANCH, 1.0)
+            interval = preferences.getInt("time", 1).times(5).toLong()
+            radius = preferences.getInt("radius", 5).times(100)
+        }
+
         if (!PermissionsManager.areLocationPermissionsGranted(application)) {
             permissionsManager.requestLocationPermissions(this)
         }
@@ -46,7 +59,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         navController = this.findNavController(R.id.nav_host_fragment)
         drawerLayout = binding.drawerLayout
         NavigationUI.setupWithNavController(binding.navView, navController)
-        branchManager = BranchManager(applicationContext)
+        findViewById<BottomNavigationView>(R.id.bottom_nav)
+            .setupWithNavController(navController)
         initLocationEngine()
     }
 
@@ -95,4 +109,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     ) {
         permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
+    private fun SharedPreferences.getDouble(key: String, default: Double) =
+        java.lang.Double.longBitsToDouble(getLong(key, java.lang.Double.doubleToRawLongBits(default)))
 }

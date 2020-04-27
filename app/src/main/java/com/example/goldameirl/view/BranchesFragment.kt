@@ -51,11 +51,11 @@ class BranchesFragment : Fragment() {
             list?.let {
                 if(it.isEmpty()) {
                     binding.branchesList.visibility = View.GONE
-                    binding.branchesList.visibility = View.VISIBLE
+                    binding.branchesEmpty.visibility = View.VISIBLE
                 }
                 else {
                     adapter.submitList(it)
-                    binding.branchesList.visibility = View.GONE
+                    binding.branchesEmpty.visibility = View.GONE
                     binding.branchesList.visibility = View.VISIBLE
                 }
             }

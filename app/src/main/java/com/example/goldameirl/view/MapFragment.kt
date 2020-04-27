@@ -2,20 +2,16 @@ package com.example.goldameirl.view
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
 import android.location.Location
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentMapBinding
 import com.example.goldameirl.misc.TOKEN
@@ -43,7 +39,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     private var mapView: MapView? = null
     lateinit var viewModel: MapViewModel
     lateinit var binding: FragmentMapBinding
-    lateinit var drawerLayout: DrawerLayout
     var location: Location = Location("myLocation")
     lateinit var mapboxMap: MapboxMap
     private lateinit var mainActivity: MainActivity
@@ -54,6 +49,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mainActivity = requireNotNull(activity) as MainActivity
         application = requireNotNull(activity).application
         Mapbox.getInstance(application, TOKEN)
+
         binding = DataBindingUtil.inflate<FragmentMapBinding>(
             inflater, R.layout.fragment_map, container, false
         )
@@ -64,22 +60,13 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             )
         ).get(MapViewModel::class.java)
 
-        val preferences = PreferenceManager.getDefaultSharedPreferences(application)
-        viewModel.branchManager.apply {
-            notificationTime = preferences.getLong(NOTIFICATION_TIME, 0L)
-            lastBranch = preferences.getDouble(LAST_BRANCH, 1.0)
-            interval = preferences.getInt("time", 1).times(5).toLong()
-            radius = preferences.getInt("radius", 5).times(100)
-        }
         mapView = binding.mapView
         binding.viewModel = viewModel
-        drawerLayout = activity?.findViewById(R.id.drawer_layout)!!
+
         binding.locationButton.setOnClickListener {
             centerCameraOnLocation(mapboxMap, location)
         }
-        binding.menuButton.setOnClickListener {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }
+
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync(this)
 
@@ -119,7 +106,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 if (location.distanceTo(newLocation) >= 100) {
                     centerCameraOnLocation(mapboxMap, newLocation)
                 }
-                viewModel.checkBranchDistance(newLocation)
                 location = newLocation
             })
         }
@@ -180,7 +166,4 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         super.onSaveInstanceState(outState)
         mapView?.onSaveInstanceState(outState)
     }
-
-    private fun SharedPreferences.getDouble(key: String, default: Double) =
-        java.lang.Double.longBitsToDouble(getLong(key, java.lang.Double.doubleToRawLongBits(default)))
 }

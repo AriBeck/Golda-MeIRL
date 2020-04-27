@@ -9,4 +9,8 @@
     <string name="notifications_empty">No Notifications</string>
     <string name="branches_title">Branches</string>
     <string name="branches_empty">No Branches Loaded</string>
+    <string name="map_item">Map</string>
+    <string name="branches_item">Branches</string>
+    <string name="notifications_item">Notifications</string>
+    <string name="settings_item">Settings</string>
 </resources>

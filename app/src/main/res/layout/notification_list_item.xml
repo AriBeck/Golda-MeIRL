@@ -10,6 +10,7 @@
     </data>
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/notification_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
@@ -17,12 +18,11 @@
         app:cardMaxElevation="1dp"
         app:cardElevation="0.7dp"
         app:cardPreventCornerOverlap="true"
-        app:cardBackgroundColor="@color/primaryDarkColor">
+        app:cardBackgroundColor="@color/secondaryColor">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
 
             <ImageView
                 android:id="@+id/notification_icon"
@@ -47,7 +47,7 @@
                 android:fontFamily="@font/ribeye_marrow"
                 android:text="@{notification.title}"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-                android:textColor="@color/primaryTextColor"
+                android:textColor="@color/secondaryTextColor"
                 app:layout_constraintStart_toEndOf="@+id/notification_icon"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Golda Givat Shmuel" />
@@ -59,7 +59,7 @@
                 android:layout_margin="8dp"
                 android:fontFamily="@font/ribeye_marrow"
                 android:text="@{notification.content}"
-                android:textColor="@color/primaryTextColor"
+                android:textColor="@color/secondaryTextColor"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/time_stamp"
                 app:layout_constraintStart_toEndOf="@+id/notification_icon"
@@ -75,26 +75,35 @@
                 android:layout_marginEnd="8dp"
                 android:fontFamily="@font/ribeye_marrow"
                 android:gravity="center"
-                android:textColor="@color/primaryTextColor"
-                android:textSize="10sp"
+                android:textColor="@color/secondaryTextColor"
+                android:textSize="12sp"
                 app:dateTime="@{notification}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="Monday\n20-04-2020\n12:00" />
+                tools:text="20-04-2020\n12:00" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/share_button"
-                android:layout_width="42dp"
-                android:layout_height="17dp"
-                android:background="#34DAD6D6"
-                android:text="SHARE"
-                android:textColor="@color/primaryTextColor"
-                android:textSize="10sp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginBottom="8dp"
+                android:scaleType="fitXY"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:tint="@color/secondaryTextColor"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.52"
-                app:layout_constraintStart_toEndOf="@+id/content_text"
-                app:layout_constraintTop_toBottomOf="@+id/time_stamp" />
+                app:layout_constraintTop_toBottomOf="@id/time_stamp"
+                app:srcCompat="@drawable/icon_share_foreground" />
+
+            <CheckBox
+                android:id="@+id/checkBox"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginBottom="8dp"
+                app:isRead="@{notification}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/share_button"
+                app:layout_constraintTop_toBottomOf="@id/time_stamp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

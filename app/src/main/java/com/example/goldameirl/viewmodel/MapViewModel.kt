@@ -5,7 +5,6 @@ import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.goldameirl.model.BranchManager
 import com.example.goldameirl.model.BranchRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,8 +17,6 @@ class MapViewModel(
 ) : ViewModel() {
     private val repoJob = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.Main + repoJob)
-
-    val branchManager: BranchManager = BranchManager(context)
 
     private val _toNotifications = MutableLiveData<Boolean>()
     val toNotifications: LiveData<Boolean>
@@ -39,10 +36,6 @@ class MapViewModel(
                 BranchRepository.getInstance(context)?.refreshBranches()
             } catch (e: Exception) {}
         }
-    }
-
-    fun checkBranchDistance(location: Location?) {
-        branchManager.checkBranchDistance(location)
     }
 
     fun onNotificationsClick() {

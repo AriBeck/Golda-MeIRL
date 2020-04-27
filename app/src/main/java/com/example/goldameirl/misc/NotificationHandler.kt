@@ -23,6 +23,7 @@ class NotificationHandler(val context: Context) {
     private val coroutineScope = CoroutineScope(Dispatchers.Main + notificationJob)
 
     fun createNotification(title: String, content: String) {
+
         createChannel()
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -37,6 +38,7 @@ class NotificationHandler(val context: Context) {
             type = "text/plain"
         }
         val sharePendingIntent = PendingIntent.getActivity(context, 0, shareIntent, 0)
+
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.icon_branch)
             .setContentTitle(title)
@@ -46,6 +48,7 @@ class NotificationHandler(val context: Context) {
             .setAutoCancel(true)
             .addAction(android.R.drawable.ic_menu_share, "Share", sharePendingIntent)
             .build()
+
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
 
         val newNotification =
@@ -63,6 +66,7 @@ class NotificationHandler(val context: Context) {
                 description = descriptionText
                 enableVibration(true)
             }
+
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as
                     NotificationManager
             notificationManager.createNotificationChannel(channel)

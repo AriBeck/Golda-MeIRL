@@ -23,13 +23,16 @@ class NotificationsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val application = requireNotNull(this.activity).application
+
         val binding = DataBindingUtil.inflate<FragmentNotificationsBinding>(
             inflater,
             R.layout.fragment_notifications, container, false
         )
+
         val viewModelFactory = NotificationsViewModelFactory(application)
         viewModel = ViewModelProvider(this, viewModelFactory)
             .get(NotificationsViewModel::class.java)
+
         binding.viewModel = viewModel
         adapter = NotificationAdapter()
         binding.notificationList.adapter = adapter
@@ -49,5 +52,4 @@ class NotificationsFragment : Fragment() {
         })
         return binding.root
     }
-
 }

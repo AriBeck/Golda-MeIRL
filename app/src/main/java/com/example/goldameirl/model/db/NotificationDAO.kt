@@ -1,9 +1,7 @@
 package com.example.goldameirl.model.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import com.example.goldameirl.model.Notification
 
 @Dao
@@ -16,6 +14,9 @@ interface NotificationDAO {
 
     @Query("SELECT * FROM Notifications")
     fun getAll(): LiveData<List<Notification>>
+
+    @Update
+    fun update(notification: Notification)
 
     @Query("DELETE FROM Notifications")
     fun clear()
