@@ -22,7 +22,7 @@ private val retrofit = Retrofit.Builder()
     .build()
 
 interface BranchAPIService {
-    @GET("branches.json")
+    @GET("golda.json")
     fun getBranches():
             Deferred<List<Branch>>
 }

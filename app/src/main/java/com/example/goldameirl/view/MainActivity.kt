@@ -7,11 +7,9 @@ import android.os.Bundle
 import android.os.Looper
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.*
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import com.example.goldameirl.R
@@ -27,7 +25,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
     var permissionsManager = PermissionsManager(this)
 
-    private lateinit var drawerLayout: DrawerLayout
+    lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
     private lateinit var locationEngine: LocationEngine
@@ -54,11 +52,9 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         if (!PermissionsManager.areLocationPermissionsGranted(application)) {
             permissionsManager.requestLocationPermissions(this)
         }
-        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this,
+        binding = DataBindingUtil.setContentView(this,
             R.layout.activity_main)
         navController = this.findNavController(R.id.nav_host_fragment)
-        drawerLayout = binding.drawerLayout
-        NavigationUI.setupWithNavController(binding.navView, navController)
         findViewById<BottomNavigationView>(R.id.bottom_nav)
             .setupWithNavController(navController)
         initLocationEngine()

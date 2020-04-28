@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Switch
+import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -16,10 +18,12 @@ import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentMapBinding
 import com.example.goldameirl.misc.TOKEN
 import com.example.goldameirl.misc.centerCameraOnLocation
+import com.example.goldameirl.model.Branch
 import com.example.goldameirl.viewmodel.*
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
+import com.mapbox.mapboxsdk.annotations.Marker
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
@@ -42,6 +46,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     var location: Location = Location("myLocation")
     lateinit var mapboxMap: MapboxMap
     private lateinit var mainActivity: MainActivity
+    var branchList: List<Branch> = ArrayList()
+    private lateinit var branchMarkerList: MutableList<Marker>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,6 +86,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         })
 
+        binding.menuButton.setOnClickListener {
+            mainActivity.binding.drawerLayout.openDrawer(GravityCompat.START)
+        }
+
         return binding.root
     }
 
@@ -87,20 +97,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         this.mapboxMap = mapboxMap
 
         mapboxMap.setStyle(Style.DARK) {
-            viewModel.branches?.observe(viewLifecycleOwner, Observer { branches ->
-                branches.forEach { branch ->
-                    mapboxMap.addMarker(
-                        MarkerOptions()
-                            .position(LatLng(branch.latitude, branch.longitude))
-                            .setIcon(IconFactory.getInstance(application).fromResource(R.drawable.icon_branch))
-                            .title(branch.name)
-                            .setSnippet(branch.address)
-                    )
-                }
-            })
+            if (mapboxMap.markers.isEmpty()) {
+                addBranchLayer()
+            }
             enableLocationComponent(it)
-            centerCameraOnLocation(mapboxMap, location)
-
             mainActivity.location.observe(viewLifecycleOwner, Observer<Location> { newLocation ->
                 mapboxMap.locationComponent.forceLocationUpdate(newLocation)
                 if (location.distanceTo(newLocation) >= 100) {
@@ -108,6 +108,41 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 }
                 location = newLocation
             })
+            centerCameraOnLocation(mapboxMap, location)
+        }
+
+        viewModel.branches?.observe(viewLifecycleOwner, Observer { branches ->
+            branchList = branches
+            addBranchLayer()
+        })
+
+        val branchToggle = mainActivity.binding.navView.menu
+            .findItem(R.id.branch_layer_item).actionView.findViewById<Switch>(R.id.item_switch)
+        branchToggle.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked){
+                addBranchLayer()
+            }
+            else {
+                branchMarkerList.forEach {
+                    this.mapboxMap.removeMarker(it)
+                }
+            }
+        }
+    }
+
+    private fun addBranchLayer() {
+        branchMarkerList = ArrayList()
+        branchList.forEach { branch ->
+            branchMarkerList.add(
+                mapboxMap.addMarker(
+                    (MarkerOptions()
+                        .position(LatLng(branch.latitude, branch.longitude))
+                        .setIcon(IconFactory.getInstance(application)
+                            .fromResource(R.drawable.icon_branch))
+                        .title(branch.name)
+                        .setSnippet(branch.address)
+                            ))
+            )
         }
     }
 
