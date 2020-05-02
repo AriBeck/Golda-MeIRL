@@ -18,7 +18,7 @@ const val CHANNEL_ID = "com.example.goldameirl.discounts"
 const val GROUP_ID = "com.example.goldameirl"
 const val NOTIFICATION_ID = 1
 
-class NotificationHandler(val context: Context) {
+class NotificationHandler(val context: Context) { //channel id, group, icon
     private val notificationJob = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.Main + notificationJob)
 
@@ -60,7 +60,7 @@ class NotificationHandler(val context: Context) {
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val descriptionText = "Main notification channel"
+            val descriptionText = "Main notification channel" //channel description
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, CHANNEL_ID, importance).apply {
                 description = descriptionText
@@ -73,8 +73,8 @@ class NotificationHandler(val context: Context) {
         }
     }
 
-    private suspend fun insertNotification(
-        newNotification: com.example.goldameirl.model.Notification) {
+    private suspend fun insertNotification( // alert vs notification
+        newNotification: com.example.goldameirl.model.Notification) { // db
         withContext(Dispatchers.IO) {
             DB.getInstance(context)!!.notificationDAO.insert(newNotification)
         }

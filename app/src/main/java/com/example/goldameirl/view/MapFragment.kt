@@ -2,25 +2,31 @@ package com.example.goldameirl.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.location.Location
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Switch
 import androidx.core.view.GravityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentMapBinding
 import com.example.goldameirl.misc.TOKEN
 import com.example.goldameirl.misc.centerCameraOnLocation
 import com.example.goldameirl.model.Branch
-import com.example.goldameirl.viewmodel.*
+import com.example.goldameirl.viewmodel.MapViewModel
+import com.example.goldameirl.viewmodel.MapViewModelFactory
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Geometry
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.Marker
@@ -34,26 +40,42 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.URL
 
 const val NOTIFICATION_TIME = "NotificationTime"
 const val LAST_BRANCH = "LastBranch"
 
 class MapFragment : Fragment(), OnMapReadyCallback {
     private lateinit var application: Context
-    private var mapView: MapView? = null
-    lateinit var viewModel: MapViewModel
-    lateinit var binding: FragmentMapBinding
-    var location: Location = Location("myLocation")
-    lateinit var mapboxMap: MapboxMap
     private lateinit var mainActivity: MainActivity
+    private lateinit var preferences: SharedPreferences
+    lateinit var binding: FragmentMapBinding
+    lateinit var viewModel: MapViewModel
+
+    private var mapView: MapView? = null
+    var location: Location = Location("myLocation") //currentLocation
+    lateinit var mapboxMap: MapboxMap
     var branchList: List<Branch> = ArrayList()
     private lateinit var branchMarkerList: MutableList<Marker>
+    private lateinit var branchToggle: Switch
+    private lateinit var anitaMarkerList: MutableList<Marker>
+    var anitaCollection: FeatureCollection? = null
+    var anitaGeoJson: String? = ""
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
         mainActivity = requireNotNull(activity) as MainActivity
         application = requireNotNull(activity).application
+        preferences = PreferenceManager.getDefaultSharedPreferences(application) // initialize functions
         Mapbox.getInstance(application, TOKEN)
 
         binding = DataBindingUtil.inflate<FragmentMapBinding>(
@@ -86,9 +108,22 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         })
 
+        viewModel.branches?.observe(viewLifecycleOwner, Observer { branches ->
+            branchList = branches
+        })
+
+        viewModel.anitaGeoJson.observe(viewLifecycleOwner, Observer { anitaGeoJson ->
+            anitaCollection = FeatureCollection.fromJson(anitaGeoJson)
+        })
+
         binding.menuButton.setOnClickListener {
             mainActivity.binding.drawerLayout.openDrawer(GravityCompat.START)
         }
+
+        branchToggle = mainActivity.binding.navView.menu
+            .findItem(R.id.branch_layer_item).actionView.findViewById(R.id.item_switch)
+
+        branchToggle.isChecked = preferences.getBoolean("branchToggle", true)
 
         return binding.root
     }
@@ -97,9 +132,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         this.mapboxMap = mapboxMap
 
         mapboxMap.setStyle(Style.DARK) {
-            if (mapboxMap.markers.isEmpty()) {
-                addBranchLayer()
-            }
             enableLocationComponent(it)
             mainActivity.location.observe(viewLifecycleOwner, Observer<Location> { newLocation ->
                 mapboxMap.locationComponent.forceLocationUpdate(newLocation)
@@ -111,13 +143,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             centerCameraOnLocation(mapboxMap, location)
         }
 
-        viewModel.branches?.observe(viewLifecycleOwner, Observer { branches ->
-            branchList = branches
-            addBranchLayer()
-        })
-
-        val branchToggle = mainActivity.binding.navView.menu
-            .findItem(R.id.branch_layer_item).actionView.findViewById<Switch>(R.id.item_switch)
         branchToggle.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked){
                 addBranchLayer()
@@ -127,10 +152,14 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                     this.mapboxMap.removeMarker(it)
                 }
             }
+
+            preferences.edit().putBoolean("branchToggle", isChecked).apply()
         }
+
+        setupMarkers()
     }
 
-    private fun addBranchLayer() {
+    private fun addBranchLayer() { // separate function and generalize
         branchMarkerList = ArrayList()
         branchList.forEach { branch ->
             branchMarkerList.add(
@@ -144,6 +173,46 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                             ))
             )
         }
+    }
+
+    private fun addAnitaLayer() {
+
+        anitaMarkerList = ArrayList()
+        anitaCollection?.features()?.forEach {
+            val name = it.getStringProperty("name");
+            val point = it.geometry() as Point
+                mapboxMap.addMarker(
+                    (MarkerOptions()
+                        .position(LatLng(point.latitude(), point.longitude()))
+                        .setIcon(IconFactory.getInstance(application)
+                            .fromResource(R.drawable.icon_branch))
+                        .title(name)
+                            ))
+        }
+
+//        val anitaSource = GeoJsonSource("anita.source", anitaFeatureCollection)
+//        mapboxMap.style?.apply {
+//            addSource(anitaSource)
+//            addImage(
+//                "anita.icon", resources
+//                    .getDrawable(R.drawable.icon_anita, null)
+//            )
+//            addLayer(
+//                SymbolLayer("anita.layer", "anita.source")
+//                    .withProperties(
+//                        PropertyFactory.iconImage("anita.icon")
+//                    )
+//            )
+//        }
+
+    }
+
+    private fun setupMarkers() {
+
+        if (preferences.getBoolean("branchToggle", true)) {
+            addBranchLayer()
+        }
+        addAnitaLayer()
     }
 
     @SuppressLint("MissingPermission")

@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     private lateinit var navController: NavController
 
     private lateinit var locationEngine: LocationEngine
-    private val callback = LocationChangeListeningCallback()
+    private val callback = LocationChangeListeningCallback() //locationChangeCallback
 
     private val _location = MutableLiveData<Location>()
     val location: LiveData<Location>
@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         super.onCreate(savedInstanceState)
 
         branchManager = BranchManager(applicationContext)
-        val preferences = PreferenceManager.getDefaultSharedPreferences(application)
-        branchManager.apply {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(application) // initialize function
+        branchManager.apply {  //let the class do that
             notificationTime = preferences.getLong(NOTIFICATION_TIME, 0L)
             lastBranch = preferences.getDouble(LAST_BRANCH, 1.0)
             interval = preferences.getInt("time", 1).times(5).toLong()
@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
             if (result?.lastLocation != null) {
                 val newLocation = result.lastLocation
                 branchManager.checkBranchDistance(newLocation)
-                _location.value = newLocation
+                _location.value = newLocation // make interface which is used for location change success
             }
         }
 

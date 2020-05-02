@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import com.example.goldameirl.model.db.BranchDAO
 import com.example.goldameirl.model.db.DB
 import kotlinx.coroutines.*
+import retrofit2.await
 
 class BranchRepository(context: Context) {
     private var db: BranchDAO = DB.getInstance(context)!!.branchDAO
@@ -16,6 +17,7 @@ class BranchRepository(context: Context) {
             db.insertList(branchList)
         }
     }
+
 
     companion object {
         @Volatile

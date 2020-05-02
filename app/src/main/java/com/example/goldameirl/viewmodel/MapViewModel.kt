@@ -6,14 +6,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.goldameirl.model.BranchRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.lang.Exception
+import java.net.URL
 
 class MapViewModel(
-    val context: Context
+    val context: Context // not necessary
 ) : ViewModel() {
     private val repoJob = Job()
     private val coroutineScope = CoroutineScope(Dispatchers.Main + repoJob)
@@ -22,11 +20,14 @@ class MapViewModel(
     val toNotifications: LiveData<Boolean>
         get() = _toNotifications
 
-    private val location = Location("myLocation")
+    private val location = Location("myLocation") // currentLocation
+
+    val anitaGeoJson = MutableLiveData<String>()
 
     init {
         refreshDataFromRepository()
     }
+
 
     val branches = BranchRepository.getInstance(context)?.branches
 

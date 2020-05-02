@@ -10,7 +10,7 @@ import com.example.goldameirl.model.Notification
 import java.text.SimpleDateFormat
 
 @SuppressLint("SimpleDateFormat")
-fun convertLongToDateString(systemTime: Long): String {
+fun convertLongToDateString(systemTime: Long): String { //don't need long and string in title
     return SimpleDateFormat("dd-MM-yyyy'\n'HH:mm")
         .format(systemTime).toString()
 }

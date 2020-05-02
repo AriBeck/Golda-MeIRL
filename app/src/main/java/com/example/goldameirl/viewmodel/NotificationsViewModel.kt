@@ -20,7 +20,7 @@ class NotificationsViewModel(
 ) : ViewModel() {
     val notifications = DB.getInstance(context)?.notificationDAO?.getAll()
 
-    class NotificationAdapter() :
+    class NotificationAdapter() : // separate class file
         ListAdapter<Notification, NotificationAdapter.ViewHolder>(NotificationDiffCallBack()) {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
