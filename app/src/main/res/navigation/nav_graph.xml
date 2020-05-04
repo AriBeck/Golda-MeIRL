@@ -9,8 +9,8 @@
         android:name="com.example.goldameirl.view.MapFragment"
         android:label="MapFragment" >
         <action
-            android:id="@+id/mapFragment_to_notificationsFragment"
-            app:destination="@id/notificationsFragment"
+            android:id="@+id/mapFragment_to_alertsFragment"
+            app:destination="@id/alertsFragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
@@ -37,10 +37,10 @@
             app:popUpToInclusive="false" />
     </fragment>
     <fragment
-        android:id="@+id/notificationsFragment"
-        android:name="com.example.goldameirl.view.NotificationsFragment"
+        android:id="@+id/alertsFragment"
+        android:name="com.example.goldameirl.view.AlertsFragment"
         android:label="fragment_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_alerts" />
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.example.goldameirl.view.SettingsFragment"

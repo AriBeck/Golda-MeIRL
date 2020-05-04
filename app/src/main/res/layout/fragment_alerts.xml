@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.example.goldameirl.viewmodel.NotificationsViewModel" />
+            type="com.example.goldameirl.viewmodel.AlertsViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -19,7 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/ribeye_marrow"
-            android:text="@string/notifications_title"
+            android:text="@string/alerts_title"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             android:textColor="@color/primaryTextColor"
             android:gravity="center"
@@ -28,11 +28,11 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/notifications_empty"
+            android:id="@+id/alerts_empty"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:fontFamily="@font/ribeye_marrow"
-            android:text="@string/notifications_empty"
+            android:text="@string/alerts_empty"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             android:background="@color/primaryDarkColor"
             android:textColor="@color/primaryTextColor"
@@ -46,7 +46,7 @@
 
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/notification_list"
+            android:id="@+id/alert_list"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"

@@ -6,19 +6,19 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.example.goldameirl.model.Branch
-import com.example.goldameirl.model.Notification
+import com.example.goldameirl.model.Alert
 import java.text.SimpleDateFormat
 
 @SuppressLint("SimpleDateFormat")
-fun convertLongToDateString(systemTime: Long): String { //don't need long and string in title
+fun convertToDate(systemTime: Long): String {
     return SimpleDateFormat("dd-MM-yyyy'\n'HH:mm")
         .format(systemTime).toString()
 }
 
 @BindingAdapter("dateTime")
-fun TextView.formatDateTime(item: Notification?) {
+fun TextView.formatDateTime(item: Alert?) {
     item?.let {
-        text = convertLongToDateString(it.createdAt)
+        text = convertToDate(it.createdAt)
     }
 }
 
@@ -30,7 +30,7 @@ fun TextView.formatPhone(item: Branch?) {
 }
 
 @BindingAdapter("isRead")
-fun CheckBox.isRead(item: Notification?) {
+fun CheckBox.isRead(item: Alert?) {
     item?.let {
         isChecked = item.isRead
     }

@@ -3,9 +3,9 @@ package com.example.goldameirl
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.goldameirl.model.Notification
-import com.example.goldameirl.model.db.DB
-import com.example.goldameirl.model.db.NotificationDAO
+import com.example.goldameirl.model.Alert
+import com.example.goldameirl.db.DB
+import com.example.goldameirl.db.AlertDAO
 import org.junit.Assert.assertEquals
 import org.junit.After
 import org.junit.Before
@@ -23,7 +23,7 @@ import java.io.IOException
 @RunWith(AndroidJUnit4::class)
 class AppDatabaseTest {
 
-    private lateinit var notificationDao: NotificationDAO
+    private lateinit var alertDao: AlertDAO
     private lateinit var db: DB
 
     @Before
@@ -35,7 +35,7 @@ class AppDatabaseTest {
             // Allowing main thread queries, just for testing.
             .allowMainThreadQueries()
             .build()
-        notificationDao = db.notificationDAO
+        alertDao = db.alertDAO
     }
 
     @After
@@ -47,9 +47,9 @@ class AppDatabaseTest {
     @Test
     @Throws(Exception::class)
     fun insertAndGetNotification() {
-        val notification = Notification(title = "Title", content = "Content")
-        notificationDao.insert(notification)
-        val lastNotification = notificationDao.getLastNotification()
+        val notification = Alert(title = "Title", content = "Content")
+        alertDao.insert(notification)
+        val lastNotification = alertDao.getLastAlert()
         assertEquals(lastNotification?.title, "Title")
     }
 }

@@ -1,7 +1,7 @@
 package com.example.goldameirl.view
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.app.Application
 import android.content.SharedPreferences
 import android.location.Location
 import android.os.Bundle
@@ -15,22 +15,23 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import androidx.preference.PreferenceManager
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentMapBinding
+import com.example.goldameirl.location.LocationChangeSuccessWorker
+import com.example.goldameirl.location.LocationTool
 import com.example.goldameirl.misc.TOKEN
-import com.example.goldameirl.misc.centerCameraOnLocation
+import com.example.goldameirl.model.AlertManager
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.viewmodel.MapViewModel
 import com.example.goldameirl.viewmodel.MapViewModelFactory
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.geojson.FeatureCollection
-import com.mapbox.geojson.Geometry
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.Marker
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
@@ -40,29 +41,20 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.net.URL
 
-const val NOTIFICATION_TIME = "NotificationTime"
-const val LAST_BRANCH = "LastBranch"
+const val DEFAULT_ZOOM = 15.0
 
-class MapFragment : Fragment(), OnMapReadyCallback {
-    private lateinit var application: Context
+class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker {
+    private lateinit var application: Application
     private lateinit var mainActivity: MainActivity
     private lateinit var preferences: SharedPreferences
-    lateinit var binding: FragmentMapBinding
     lateinit var viewModel: MapViewModel
 
+    private var currentLocation: Location = Location("currentLocation")
+
     private var mapView: MapView? = null
-    var location: Location = Location("myLocation") //currentLocation
     lateinit var mapboxMap: MapboxMap
-    var branchList: List<Branch> = ArrayList()
+    var branches: List<Branch> = ArrayList()
     private lateinit var branchMarkerList: MutableList<Marker>
     private lateinit var branchToggle: Switch
     private lateinit var anitaMarkerList: MutableList<Marker>
@@ -74,11 +66,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
         mainActivity = requireNotNull(activity) as MainActivity
-        application = requireNotNull(activity).application
-        preferences = PreferenceManager.getDefaultSharedPreferences(application) // initialize functions
+        application = requireActivity().application
         Mapbox.getInstance(application, TOKEN)
 
-        binding = DataBindingUtil.inflate<FragmentMapBinding>(
+        val binding = DataBindingUtil.inflate<FragmentMapBinding>(
             inflater, R.layout.fragment_map, container, false
         )
 
@@ -92,7 +83,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         binding.viewModel = viewModel
 
         binding.locationButton.setOnClickListener {
-            centerCameraOnLocation(mapboxMap, location)
+            mapboxMap.centerCamera(currentLocation)
         }
 
         mapView?.onCreate(savedInstanceState)
@@ -108,8 +99,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             }
         })
 
-        viewModel.branches?.observe(viewLifecycleOwner, Observer { branches ->
-            branchList = branches
+        viewModel.branches?.observe(viewLifecycleOwner, Observer { refreshedBranches ->
+            branches = refreshedBranches
         })
 
         viewModel.anitaGeoJson.observe(viewLifecycleOwner, Observer { anitaGeoJson ->
@@ -133,14 +124,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
         mapboxMap.setStyle(Style.DARK) {
             enableLocationComponent(it)
-            mainActivity.location.observe(viewLifecycleOwner, Observer<Location> { newLocation ->
-                mapboxMap.locationComponent.forceLocationUpdate(newLocation)
-                if (location.distanceTo(newLocation) >= 100) {
-                    centerCameraOnLocation(mapboxMap, newLocation)
-                }
-                location = newLocation
-            })
-            centerCameraOnLocation(mapboxMap, location)
         }
 
         branchToggle.setOnCheckedChangeListener { buttonView, isChecked ->
@@ -159,9 +142,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         setupMarkers()
     }
 
-    private fun addBranchLayer() { // separate function and generalize
+    private fun addBranchLayer() {
         branchMarkerList = ArrayList()
-        branchList.forEach { branch ->
+        branches.forEach { branch ->
             branchMarkerList.add(
                 mapboxMap.addMarker(
                     (MarkerOptions()
@@ -233,7 +216,27 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 cameraMode = CameraMode.TRACKING
                 renderMode = RenderMode.COMPASS
             }
+
+            LocationTool.getInstance(
+                requireContext(),
+                AlertManager.getInstance(requireContext())!!,
+                this
+            )
         }
+    }
+
+    private fun MapboxMap.centerCamera(location: Location) {
+        animateCamera(CameraUpdateFactory
+            .newLatLngZoom(LatLng(location.latitude, location.longitude), DEFAULT_ZOOM)
+        )
+    }
+
+    override fun doWork(newLocation: Location) {
+        if (newLocation.distanceTo(currentLocation) >= 100) {
+            mapboxMap.centerCamera(newLocation)
+        }
+
+        currentLocation = newLocation
     }
 
     override fun onResume() {

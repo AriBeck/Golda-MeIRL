@@ -1,6 +1,5 @@
 package com.example.goldameirl.view
 
-import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,36 +10,29 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentBranchesBinding
+import com.example.goldameirl.viewmodel.BranchAdapter
 import com.example.goldameirl.viewmodel.BranchesViewModel
-import com.example.goldameirl.viewmodel.BranchesViewModel.BranchAdapter
 import com.example.goldameirl.viewmodel.BranchesViewModelFactory
 
 
-class BranchesFragment : Fragment() {
+class BranchesFragment : Fragment(){
 
     private lateinit var viewModel: BranchesViewModel
     private lateinit var adapter: BranchAdapter
-
-    private var location = Location("myLocation")
     private lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        mainActivity = requireNotNull(activity) as MainActivity
         val application = requireNotNull(this.activity).application
-
-        mainActivity.location.observe(viewLifecycleOwner, Observer<Location> { newLocation ->
-            location = newLocation
-        })
 
         val binding = DataBindingUtil.inflate<FragmentBranchesBinding>(
             inflater,
             R.layout.fragment_branches, container, false
         )
-        location = mainActivity.location.value!!
-        val viewModelFactory = BranchesViewModelFactory(application, location)
+
+        val viewModelFactory = BranchesViewModelFactory(application)
         viewModel = ViewModelProvider(this, viewModelFactory)
             .get(BranchesViewModel::class.java)
         binding.viewModel = viewModel
@@ -71,6 +63,4 @@ class BranchesFragment : Fragment() {
 
         return binding.root
     }
-
-
 }

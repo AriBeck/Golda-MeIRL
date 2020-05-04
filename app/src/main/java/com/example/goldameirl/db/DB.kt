@@ -1,17 +1,15 @@
-package com.example.goldameirl.model.db
+package com.example.goldameirl.db
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.goldameirl.model.Branch
-import com.example.goldameirl.model.Notification
+import com.example.goldameirl.model.Alert
 
-@Database(entities = [Notification::class, Branch::class], version = 2, exportSchema = false)
+@Database(entities = [Alert::class, Branch::class], version = 3, exportSchema = false)
 abstract class DB : RoomDatabase() {
-    abstract val notificationDAO: NotificationDAO
+    abstract val alertDAO: AlertDAO
     abstract val branchDAO: BranchDAO
 
     companion object {

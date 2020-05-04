@@ -3,8 +3,8 @@ package com.example.goldameirl.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "Notifications")
-data class Notification(
+@Entity(tableName = "Alerts")
+data class Alert(
     @PrimaryKey (autoGenerate = true)
     val id: Long = 0L,
     val title: String,

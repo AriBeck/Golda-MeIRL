@@ -12,7 +12,7 @@
     <item
         android:id="@+id/notificationsFragment"
         android:icon="@drawable/icon_notification_button_foreground"
-        android:title="@string/notifications_item" />
+        android:title="@string/alerts_item" />
     <item
         android:id="@+id/settingsFragment"
         android:icon="@drawable/icon_settings_button"

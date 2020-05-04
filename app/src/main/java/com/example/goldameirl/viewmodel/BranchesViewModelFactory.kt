@@ -1,18 +1,16 @@
 package com.example.goldameirl.viewmodel
 
-import android.content.Context
-import android.location.Location
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import java.lang.IllegalArgumentException
 
 class BranchesViewModelFactory(
-    private val context: Context,
-    private val location: Location): ViewModelProvider.Factory {
+    private val application: Application): ViewModelProvider.Factory {
     @Suppress("unchecked_cast")
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(BranchesViewModel::class.java)) {
-            return BranchesViewModel(context, location) as T
+            return BranchesViewModel(application) as T
         }
         throw IllegalArgumentException("Unknown Viewmodel Class")
     }
