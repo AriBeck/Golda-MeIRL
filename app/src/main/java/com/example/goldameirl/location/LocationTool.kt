@@ -3,17 +3,18 @@ package com.example.goldameirl.location
 import android.content.Context
 import android.location.Location
 import android.os.Looper
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.goldameirl.model.DEFAULT_RADIUS
 import com.mapbox.android.core.location.*
 import java.lang.Exception
 
 class LocationTool private constructor(
-    val context: Context,
-    vararg locationChangeSuccessWorkers: LocationChangeSuccessWorker
+    val context: Context
 ) {
+    private val locationChangeSuccessWorkers = mutableListOf<LocationChangeSuccessWorker>()
     private lateinit var locationEngine: LocationEngine
-    private val locationChangeCallback =
-        LocationChangeListeningCallback(locationChangeSuccessWorkers)
+    private val locationChangeCallback = LocationChangeListeningCallback()
     var currentLocation = Location("currentLocation")
 
     init {
@@ -29,24 +30,17 @@ class LocationTool private constructor(
         @Volatile
         private var INSTANCE: LocationTool? = null
 
-        fun getInstance(context: Context,
-                        vararg locationChangeSuccessWorkers: LocationChangeSuccessWorker):
+        fun getInstance(context: Context):
                 LocationTool? {
 
             synchronized(this) {
                 var instance = INSTANCE
 
                 if (instance == null) {
-                    instance = LocationTool(context, *locationChangeSuccessWorkers)
+                    instance = LocationTool(context)
                     INSTANCE = instance
                 }
                 return instance
-            }
-        }
-
-        fun getInstance(context: Context): LocationTool? {
-            synchronized(this) {
-                return INSTANCE
             }
         }
     }
@@ -62,8 +56,15 @@ class LocationTool private constructor(
         locationEngine.getLastLocation(locationChangeCallback)
     }
 
-    inner class LocationChangeListeningCallback(
-        private val locationChangeSuccessWorkers: Array<out LocationChangeSuccessWorker>):
+    fun subscribe(worker: LocationChangeSuccessWorker){
+        locationChangeSuccessWorkers.add(worker)
+    }
+
+    fun unsubscribe(worker: LocationChangeSuccessWorker){
+        locationChangeSuccessWorkers.remove(worker)
+    }
+
+    inner class LocationChangeListeningCallback():
         LocationEngineCallback<LocationEngineResult> {
 
         override fun onSuccess(result: LocationEngineResult?) {

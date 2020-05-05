@@ -45,14 +45,14 @@
             app:maxImageSize="50dp" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/notification_button"
+            android:id="@+id/alerts_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true"
-            android:onClick="@{() -> viewModel.onNotificationsClick()}"
+            android:onClick="@{() -> viewModel.onAlertsClick()}"
             android:src="@drawable/icon_notification_button_foreground"
             app:backgroundTint="@color/secondaryColor"
             app:layout_constraintBottom_toTopOf="@+id/location_button"

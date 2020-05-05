@@ -11,6 +11,7 @@ import androidx.navigation.*
 import androidx.navigation.ui.setupWithNavController
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.ActivityMainBinding
+import com.example.goldameirl.model.AlertManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -21,10 +22,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
     lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
-
-    private val _location = MutableLiveData<Location>()
-    val location: LiveData<Location>
-        get() = _location
+    private lateinit var alertManager: AlertManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +30,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         if (!PermissionsManager.areLocationPermissionsGranted(application)) {
             permissionsManager.requestLocationPermissions(this)
         }
+        alertManager = AlertManager.getInstance(applicationContext)!!
+
         binding = DataBindingUtil.setContentView(this,
             R.layout.activity_main)
         navController = this.findNavController(R.id.nav_host_fragment)

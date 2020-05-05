@@ -10,7 +10,7 @@
         android:icon="@drawable/icon_branch"
         android:title="@string/branches_item" />
     <item
-        android:id="@+id/notificationsFragment"
+        android:id="@+id/alertsFragment"
         android:icon="@drawable/icon_notification_button_foreground"
         android:title="@string/alerts_item" />
     <item

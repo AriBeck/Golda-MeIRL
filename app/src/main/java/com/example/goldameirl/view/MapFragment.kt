@@ -3,8 +3,10 @@ package com.example.goldameirl.view
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.SharedPreferences
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,13 +22,11 @@ import com.example.goldameirl.databinding.FragmentMapBinding
 import com.example.goldameirl.location.LocationChangeSuccessWorker
 import com.example.goldameirl.location.LocationTool
 import com.example.goldameirl.misc.TOKEN
-import com.example.goldameirl.model.AlertManager
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.viewmodel.MapViewModel
 import com.example.goldameirl.viewmodel.MapViewModelFactory
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.geojson.FeatureCollection
-import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.Marker
@@ -41,6 +41,11 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
+import java.lang.Exception
+import java.net.URI
 
 const val DEFAULT_ZOOM = 15.0
 
@@ -55,12 +60,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
     private var mapView: MapView? = null
     lateinit var mapboxMap: MapboxMap
     var branches: List<Branch> = ArrayList()
-    private lateinit var branchMarkerList: MutableList<Marker>
+    private var branchMarkerList = mutableListOf<Marker>()
     private lateinit var branchToggle: Switch
-    private lateinit var anitaMarkerList: MutableList<Marker>
-    var anitaCollection: FeatureCollection? = null
-    var anitaGeoJson: String? = ""
-
+    private lateinit var anitaToggle: Switch
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -83,28 +85,24 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         binding.viewModel = viewModel
 
         binding.locationButton.setOnClickListener {
-            mapboxMap.centerCamera(currentLocation)
+            centerCamera(currentLocation)
         }
 
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync(this)
 
-        viewModel.toNotifications.observe(viewLifecycleOwner, Observer { toNotifications ->
-            if (toNotifications) {
+        viewModel.toAlerts.observe(viewLifecycleOwner, Observer { toAlerts ->
+            if (toAlerts) {
                 this.findNavController().navigate(
                     MapFragmentDirections
-                        .mapFragmentToNotificationsFragment()
+                        .mapFragmentToAlertsFragment()
                 )
-                viewModel.onNotificationsClicked()
+                viewModel.onAlertsClicked()
             }
         })
 
         viewModel.branches?.observe(viewLifecycleOwner, Observer { refreshedBranches ->
             branches = refreshedBranches
-        })
-
-        viewModel.anitaGeoJson.observe(viewLifecycleOwner, Observer { anitaGeoJson ->
-            anitaCollection = FeatureCollection.fromJson(anitaGeoJson)
         })
 
         binding.menuButton.setOnClickListener {
@@ -114,7 +112,14 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         branchToggle = mainActivity.binding.navView.menu
             .findItem(R.id.branch_layer_item).actionView.findViewById(R.id.item_switch)
 
+        anitaToggle = mainActivity.binding.navView.menu
+            .findItem(R.id.anita_layer_item).actionView.findViewById(R.id.item_switch)
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(context)
         branchToggle.isChecked = preferences.getBoolean("branchToggle", true)
+        anitaToggle.isChecked = preferences.getBoolean("anitaToggle", true)
+
+        currentLocation = LocationTool.getInstance(requireContext())?.currentLocation!!
 
         return binding.root
     }
@@ -123,6 +128,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         this.mapboxMap = mapboxMap
 
         mapboxMap.setStyle(Style.DARK) {
+            addAnitaSource(it)
             enableLocationComponent(it)
         }
 
@@ -139,7 +145,30 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
             preferences.edit().putBoolean("branchToggle", isChecked).apply()
         }
 
+        anitaToggle.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked){
+                addAnitaLayer()
+            } else {
+                mapboxMap.getStyle {
+                    it.removeLayer("anita-layer")
+                }
+            }
+
+            preferences.edit().putBoolean("anitaToggle", isChecked).apply()
+        }
+
         setupMarkers()
+    }
+
+    private fun addAnitaSource(style: Style) {
+        try {
+            val anitaGeoJsonUrl = URI("https://wow-final.firebaseio.com/anita.json")
+            val anitaGeoJsonSource = GeoJsonSource("anita-source", anitaGeoJsonUrl)
+            style.addSource(anitaGeoJsonSource)
+        } catch (e: Exception) { }
+
+        val icon = BitmapFactory.decodeResource(resources, R.drawable.icon_annita)
+        style.addImage("anita-icon", icon)
     }
 
     private fun addBranchLayer() {
@@ -159,43 +188,20 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
     }
 
     private fun addAnitaLayer() {
-
-        anitaMarkerList = ArrayList()
-        anitaCollection?.features()?.forEach {
-            val name = it.getStringProperty("name");
-            val point = it.geometry() as Point
-                mapboxMap.addMarker(
-                    (MarkerOptions()
-                        .position(LatLng(point.latitude(), point.longitude()))
-                        .setIcon(IconFactory.getInstance(application)
-                            .fromResource(R.drawable.icon_branch))
-                        .title(name)
-                            ))
+        mapboxMap.getStyle {
+            val anitaSymbolLayer = SymbolLayer("anita-layer", "anita-source")
+            anitaSymbolLayer.setProperties(PropertyFactory.iconImage("anita-icon"))
+            it.addLayer(anitaSymbolLayer)
         }
-
-//        val anitaSource = GeoJsonSource("anita.source", anitaFeatureCollection)
-//        mapboxMap.style?.apply {
-//            addSource(anitaSource)
-//            addImage(
-//                "anita.icon", resources
-//                    .getDrawable(R.drawable.icon_anita, null)
-//            )
-//            addLayer(
-//                SymbolLayer("anita.layer", "anita.source")
-//                    .withProperties(
-//                        PropertyFactory.iconImage("anita.icon")
-//                    )
-//            )
-//        }
-
     }
 
     private fun setupMarkers() {
-
-        if (preferences.getBoolean("branchToggle", true)) {
+        if (branchToggle.isChecked) {
             addBranchLayer()
         }
-        addAnitaLayer()
+        if (anitaToggle.isChecked) {
+            addAnitaLayer()
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -217,23 +223,21 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
                 renderMode = RenderMode.COMPASS
             }
 
-            LocationTool.getInstance(
-                requireContext(),
-                AlertManager.getInstance(requireContext())!!,
-                this
-            )
+            LocationTool.getInstance(requireContext())?.subscribe(this)
+            centerCamera(currentLocation)
         }
     }
 
-    private fun MapboxMap.centerCamera(location: Location) {
-        animateCamera(CameraUpdateFactory
-            .newLatLngZoom(LatLng(location.latitude, location.longitude), DEFAULT_ZOOM)
+    private fun centerCamera(center: Location) {
+        mapboxMap.animateCamera(CameraUpdateFactory
+            .newLatLngZoom(LatLng(center.latitude, center.longitude), DEFAULT_ZOOM)
         )
     }
 
     override fun doWork(newLocation: Location) {
         if (newLocation.distanceTo(currentLocation) >= 100) {
-            mapboxMap.centerCamera(newLocation)
+            mapboxMap.locationComponent.forceLocationUpdate(newLocation)
+            centerCamera(newLocation)
         }
 
         currentLocation = newLocation
@@ -266,6 +270,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
 
     override fun onDestroy() {
         super.onDestroy()
+        LocationTool.getInstance(requireContext())?.unsubscribe(this)
         mapView?.onDestroy()
     }
 

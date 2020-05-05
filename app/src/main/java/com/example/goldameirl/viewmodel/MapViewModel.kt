@@ -13,19 +13,18 @@ class MapViewModel(
 
     private val branchManager = BranchManager.getInstance(context)
 
-    private val _toNotifications = MutableLiveData<Boolean>()
-    val toNotifications: LiveData<Boolean>
-        get() = _toNotifications
+    private val _toAlerts = MutableLiveData<Boolean>()
+    val toAlerts: LiveData<Boolean>
+        get() = _toAlerts
 
-    val anitaGeoJson = MutableLiveData<String>()
     val branches = branchManager?.branches
 
-    fun onNotificationsClick() {
-        _toNotifications.value = true
+    fun onAlertsClick() {
+        _toAlerts.value = true
     }
 
-    fun onNotificationsClicked() {
-        _toNotifications.value = false
+    fun onAlertsClicked() {
+        _toAlerts.value = false
     }
 
     override fun onCleared() {

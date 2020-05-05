@@ -7,7 +7,12 @@
             <menu>
                 <item
                     android:id="@+id/branch_layer_item"
-                    android:title="Branches"
+                    android:title="@string/branch_layer"
+                    app:actionLayout="@layout/switch_item" />
+
+                <item
+                    android:id="@+id/anita_layer_item"
+                    android:title="@string/anita_layer"
                     app:actionLayout="@layout/switch_item" />
             </menu>
         </item>

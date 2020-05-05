@@ -1,5 +1,6 @@
 package com.example.goldameirl.model
 
+import com.google.gson.JsonObject
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -25,9 +26,6 @@ private val retrofit = Retrofit.Builder()
 interface BranchAPIService {
     @GET("golda.json")
     fun getBranches(): Deferred<List<Branch>>
-
-    @GET("anita.json")
-    fun getAnitaGeoJson(): Call<String>
 }
 
 object BranchAPI {

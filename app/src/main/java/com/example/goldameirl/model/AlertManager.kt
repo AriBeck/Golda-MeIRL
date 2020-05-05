@@ -27,7 +27,7 @@ const val INTERVAL_KEY = "time"
 const val RADIUS_KEY = "radius"
 
 class AlertManager private constructor (val context: Context):
-    LocationChangeSuccessWorker {
+    LocationChangeSuccessWorker, SharedPreferences.OnSharedPreferenceChangeListener {
     var interval: Long? = 5L
     var radius: Int? = DEFAULT_RADIUS
     private var alertTime: Long? = DEFAULT_ALERT_TIME
@@ -48,6 +48,8 @@ class AlertManager private constructor (val context: Context):
     init {
         interval = preferences.getInt(INTERVAL_KEY, 1).times(5).toLong()
         radius = preferences.getInt(RADIUS_KEY, 5).times(100)
+        preferences.registerOnSharedPreferenceChangeListener(this)
+        LocationTool.getInstance(context)?.subscribe(this)
     }
 
     private fun sendAlertWhenNearBranchAndExceededInterval(location: Location?) {
@@ -117,5 +119,10 @@ class AlertManager private constructor (val context: Context):
         branchLocation.longitude = longitude
         branchLocation.latitude = latitude
         return branchLocation
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        interval = preferences.getInt(INTERVAL_KEY, 1).times(5).toLong()
+        radius = preferences.getInt(RADIUS_KEY, 5).times(100)
     }
 }

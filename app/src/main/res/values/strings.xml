@@ -17,6 +17,10 @@
 
     <string name="alert_channel_description">Alerts sent to user when user is in Golda branch
     radius</string>
+
     <string name="alert_channel_name">Golda Branch Alerts</string>
+
+    <string name="branch_layer">Golda Branches</string>
+    <string name="anita_layer">Anita Branches</string>
 
 </resources>
