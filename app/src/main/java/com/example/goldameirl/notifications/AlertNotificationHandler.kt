@@ -1,20 +1,16 @@
 package com.example.goldameirl.notifications
 
-
 import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.preference.PreferenceManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.goldameirl.view.MainActivity
 
-class AlertNotificationHandler(override val context: Context,
-                               override val channelID: String, override val groupID: String,
-                               override val iconID: Int, override val channelDescription: String,
+class AlertNotificationHandler(override val application: Context, override val channelID: String,
+                               override val groupID: String, override val iconID: Int,
+                               override val channelDescription: String,
                                override val channelName: String) :
     NotificationHandler {
     private lateinit var appIntent: PendingIntent
@@ -29,7 +25,7 @@ class AlertNotificationHandler(override val context: Context,
         initAppIntent()
         initShareIntent(content, title)
 
-        val notification = NotificationCompat.Builder(context, channelID)
+        val notification = NotificationCompat.Builder(application, channelID)
             .setSmallIcon(iconID)
             .setContentTitle(title)
             .setContentText(content)
@@ -39,7 +35,7 @@ class AlertNotificationHandler(override val context: Context,
             .addAction(android.R.drawable.ic_menu_share, "Share", shareIntent)
             .build()
 
-        NotificationManagerCompat.from(context).notify(id, notification)
+        NotificationManagerCompat.from(application).notify(id, notification)
     }
 
     private fun initShareIntent(content: String, title: String) {
@@ -52,13 +48,13 @@ class AlertNotificationHandler(override val context: Context,
             )
             type = "text/plain"
         }
-        shareIntent = PendingIntent.getActivity(context, 0, intent, 0)
+        shareIntent = PendingIntent.getActivity(application, 0, intent, 0)
     }
 
     private fun initAppIntent() {
-        val intent = Intent(context, MainActivity::class.java).apply {
+        val intent = Intent(application, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        appIntent = PendingIntent.getActivity(context, 0, intent, 0)
+        appIntent = PendingIntent.getActivity(application, 0, intent, 0)
     }
 }

@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentBranchesBinding
+import com.example.goldameirl.model.Branch
 import com.example.goldameirl.viewmodel.BranchAdapter
 import com.example.goldameirl.viewmodel.BranchesViewModel
 import com.example.goldameirl.viewmodel.BranchesViewModelFactory
@@ -19,41 +20,40 @@ class BranchesFragment : Fragment(){
 
     private lateinit var viewModel: BranchesViewModel
     private lateinit var adapter: BranchAdapter
+    private lateinit var binding: FragmentBranchesBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val application = requireNotNull(this.activity).application
+        val application = requireActivity().application
 
-        val binding = DataBindingUtil.inflate<FragmentBranchesBinding>(
-            inflater,
+        binding = DataBindingUtil.inflate(inflater,
             R.layout.fragment_branches, container, false
         )
 
         val viewModelFactory = BranchesViewModelFactory(application)
         viewModel = ViewModelProvider(this, viewModelFactory)
             .get(BranchesViewModel::class.java)
+
         binding.viewModel = viewModel
         adapter = BranchAdapter()
         binding.branchesList.adapter = adapter
 
         viewModel.branches.observe(viewLifecycleOwner, Observer { list ->
             list?.let {
-                if(it.isEmpty()) {
-                    binding.branchesList.visibility = View.GONE
-                    binding.branchesEmpty.visibility = View.VISIBLE
-                }
-                else {
-                    adapter.submitList(it)
-                    binding.branchesEmpty.visibility = View.GONE
-                    binding.branchesList.visibility = View.VISIBLE
-                }
+                setListVisibility(it)
             }
         })
 
         binding.branchesList.adapter
 
+        initSortChips()
+
+        return binding.root
+    }
+
+    private fun initSortChips() {
         binding.abcChip.setOnCheckedChangeListener { buttonView, isChecked ->
             viewModel.onChipChecked(buttonView, isChecked)
         }
@@ -61,7 +61,16 @@ class BranchesFragment : Fragment(){
         binding.locationChip.setOnCheckedChangeListener { buttonView, isChecked ->
             viewModel.onChipChecked(buttonView, isChecked)
         }
+    }
 
-        return binding.root
+    private fun setListVisibility(list: List<Branch>) {
+        if (list.isEmpty()) {
+            binding.branchesList.visibility = View.GONE
+            binding.branchesEmpty.visibility = View.VISIBLE
+        } else {
+            adapter.submitList(list)
+            binding.branchesEmpty.visibility = View.GONE
+            binding.branchesList.visibility = View.VISIBLE
+        }
     }
 }

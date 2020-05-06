@@ -23,5 +23,8 @@
     <string name="branch_layer">Golda</string>
     <string name="anita_layer">Anita</string>
     <string name="layer_menu_title">Layers</string>
+    <string name="abc_chip">ABC</string>
+    <string name="location_chip">Location</string>
+    <string name="sort_label">Sort By:</string>
 
 </resources>

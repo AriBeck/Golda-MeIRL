@@ -16,13 +16,13 @@ abstract class DB : RoomDatabase() {
         @Volatile
         private var INSTANCE: DB? = null
 
-        fun getInstance(context: Context): DB? {
+        fun getInstance(application: Context): DB? {
             synchronized(this) {
                 var instance = INSTANCE
 
                 if (instance == null) {
                     instance = Room.databaseBuilder(
-                        context.applicationContext, DB::class.java, "app_database")
+                        application, DB::class.java, "app_database")
                         .fallbackToDestructiveMigration()
                         .build()
                     INSTANCE = instance

@@ -3,14 +3,12 @@ package com.example.goldameirl.location
 import android.content.Context
 import android.location.Location
 import android.os.Looper
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.goldameirl.model.DEFAULT_RADIUS
 import com.mapbox.android.core.location.*
 import java.lang.Exception
 
 class LocationTool private constructor(
-    val context: Context
+    val application: Context
 ) {
     private val locationChangeSuccessWorkers = mutableListOf<LocationChangeSuccessWorker>()
     private lateinit var locationEngine: LocationEngine
@@ -30,14 +28,14 @@ class LocationTool private constructor(
         @Volatile
         private var INSTANCE: LocationTool? = null
 
-        fun getInstance(context: Context):
+        fun getInstance(application: Context):
                 LocationTool? {
 
             synchronized(this) {
                 var instance = INSTANCE
 
                 if (instance == null) {
-                    instance = LocationTool(context)
+                    instance = LocationTool(application)
                     INSTANCE = instance
                 }
                 return instance
@@ -46,7 +44,7 @@ class LocationTool private constructor(
     }
 
     private fun initLocationEngine() {
-        locationEngine = LocationEngineProvider.getBestLocationEngine(context)
+        locationEngine = LocationEngineProvider.getBestLocationEngine(application)
         val request = LocationEngineRequest
             .Builder(1000)
             .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)

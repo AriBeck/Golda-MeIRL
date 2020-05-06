@@ -8,7 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
 interface NotificationHandler {
-    val context: Context
+    val application: Context
     val channelID: String
     val groupID: String
     val iconID: Int
@@ -16,22 +16,24 @@ interface NotificationHandler {
     val channelName: String
 
     fun newChannel(): NotificationChannel? {
+        var channel: NotificationChannel? = null
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(channelID, channelName, importance).apply {
+            channel = NotificationChannel(channelID, channelName, importance).apply {
                 this.description = channelDescription
             }
 
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as
+            val notificationManager = application.getSystemService(Context.NOTIFICATION_SERVICE) as
                     NotificationManager
             notificationManager.createNotificationChannel(channel)
-            return channel
         }
-        return null
+
+        return channel
     }
 
     fun createNotification(title: String, content: String, id: Int) {
-        val notification = NotificationCompat.Builder(context, channelID)
+        val notification = NotificationCompat.Builder(application, channelID)
             .setSmallIcon(iconID)
             .setContentTitle(title)
             .setContentText(content)
@@ -39,10 +41,10 @@ interface NotificationHandler {
             .setAutoCancel(true)
             .build()
 
-        NotificationManagerCompat.from(context).notify(id, notification)
+        NotificationManagerCompat.from(application).notify(id, notification)
     }
 
     fun cancel(id: Int) {
-        NotificationManagerCompat.from(context).cancel(id)
+        NotificationManagerCompat.from(application).cancel(id)
     }
 }

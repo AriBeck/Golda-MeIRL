@@ -49,6 +49,11 @@ class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBac
                 AlertManager.getInstance(binding.root.context)?.delete(item)
             }
 
+            onChecked(item)
+            binding.executePendingBindings()
+        }
+
+        private fun onChecked(item: Alert) {
             binding.checkBox.apply {
                 setOnClickListener {
                     val isChecked = binding.checkBox.isChecked
@@ -67,7 +72,6 @@ class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBac
                     }
                 }
             }
-            binding.executePendingBindings()
         }
 
         private fun setAsNotRead() {

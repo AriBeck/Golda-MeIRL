@@ -28,7 +28,6 @@ import com.example.goldameirl.viewmodel.MapViewModelFactory
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
-import com.mapbox.mapboxsdk.annotations.Marker
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -51,26 +50,30 @@ const val DEFAULT_ZOOM = 15.0
 class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker {
     private lateinit var application: Application
     private lateinit var mainActivity: MainActivity
-    private lateinit var preferences: SharedPreferences
     lateinit var viewModel: MapViewModel
+    lateinit var binding: FragmentMapBinding
+
+    private lateinit var preferences: SharedPreferences
 
     private var currentLocation: Location = Location("currentLocation")
 
-    private var mapView: MapView? = null
+    private lateinit var mapView: MapView
     lateinit var mapboxMap: MapboxMap
+
     var branches: List<Branch> = ArrayList()
-    private var branchMarkerList = mutableListOf<Marker>()
+
     private lateinit var branchToggle: Switch
     private lateinit var anitaToggle: Switch
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
-        mainActivity = requireNotNull(activity) as MainActivity
+
+        mainActivity = requireActivity() as MainActivity
         application = requireActivity().application
         Mapbox.getInstance(application, TOKEN)
 
-        val binding = DataBindingUtil.inflate<FragmentMapBinding>(
+        binding = DataBindingUtil.inflate<FragmentMapBinding>(
             inflater, R.layout.fragment_map, container, false
         )
 
@@ -80,16 +83,22 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
             )
         ).get(MapViewModel::class.java)
 
-        mapView = binding.mapView
         binding.viewModel = viewModel
+        mapView = binding.mapView
+        mapView.onCreate(savedInstanceState)
+        mapView.getMapAsync(this)
 
-        binding.locationButton.setOnClickListener {
-            centerCamera(currentLocation)
-        }
+        observeViewModel()
 
-        mapView?.onCreate(savedInstanceState)
-        mapView?.getMapAsync(this)
+        initButtons()
+        initToggles()
 
+        currentLocation = LocationTool.getInstance(application)?.currentLocation!!
+
+        return binding.root
+    }
+
+    private fun observeViewModel() {
         viewModel.toAlerts.observe(viewLifecycleOwner, Observer { toAlerts ->
             if (toAlerts) {
                 this.findNavController().navigate(
@@ -103,11 +112,19 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         viewModel.branches?.observe(viewLifecycleOwner, Observer { refreshedBranches ->
             branches = refreshedBranches
         })
+    }
 
+    private fun initButtons() {
         binding.menuButton.setOnClickListener {
             mainActivity.binding.drawerLayout.openDrawer(GravityCompat.START)
         }
 
+        binding.locationButton.setOnClickListener {
+            centerCamera(currentLocation)
+        }
+    }
+
+    private fun initToggles() {
         branchToggle = mainActivity.binding.navView.menu
             .findItem(R.id.branch_layer_item).actionView.findViewById(R.id.item_switch)
 
@@ -117,10 +134,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         preferences = PreferenceManager.getDefaultSharedPreferences(context)
         branchToggle.isChecked = preferences.getBoolean("branchToggle", true)
         anitaToggle.isChecked = preferences.getBoolean("anitaToggle", true)
-
-        currentLocation = LocationTool.getInstance(requireContext())?.currentLocation!!
-
-        return binding.root
     }
 
     override fun onMapReady(mapboxMap: MapboxMap) {
@@ -131,32 +144,41 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
             enableLocationComponent(it)
         }
 
-        branchToggle.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked){
-                addBranchLayer()
-            }
-            else {
-                branchMarkerList.forEach {
-                    this.mapboxMap.removeMarker(it)
-                }
+        setLayerToggleListeners()
+
+        setupAnnotations()
+    }
+
+    private fun setLayerToggleListeners() {
+        branchToggle.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                addBranchMarkers()
+            } else {
+                clearMarkers()
             }
 
             preferences.edit().putBoolean("branchToggle", isChecked).apply()
         }
 
-        anitaToggle.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked){
+        anitaToggle.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
                 addAnitaLayer()
             } else {
-                mapboxMap.getStyle {
-                    it.removeLayer("anita-layer")
-                }
+                removeAnitaLayer()
             }
 
             preferences.edit().putBoolean("anitaToggle", isChecked).apply()
         }
+    }
 
-        setupMarkers()
+    private fun removeAnitaLayer() {
+        this.mapboxMap.getStyle {
+            it.removeLayer("anita-layer")
+        }
+    }
+
+    private fun clearMarkers() {
+        this.mapboxMap.clear()
     }
 
     private fun addAnitaSource(style: Style) {
@@ -170,18 +192,18 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         style.addImage("anita-icon", icon)
     }
 
-    private fun addBranchLayer() {
-        branchMarkerList = ArrayList()
+    private fun addBranchMarkers() {
         branches.forEach { branch ->
-            branchMarkerList.add(
-                mapboxMap.addMarker(
-                    (MarkerOptions()
-                        .position(LatLng(branch.latitude, branch.longitude))
-                        .setIcon(IconFactory.getInstance(application)
-                            .fromResource(R.drawable.icon_branch))
-                        .title(branch.name)
-                        .setSnippet(branch.address)
-                            ))
+            mapboxMap.addMarker(
+                (MarkerOptions()
+                    .position(LatLng(branch.latitude, branch.longitude))
+                    .setIcon(
+                        IconFactory.getInstance(application)
+                            .fromResource(R.drawable.icon_branch)
+                    )
+                    .title(branch.name)
+                    .setSnippet(branch.address)
+                        )
             )
         }
     }
@@ -194,9 +216,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         }
     }
 
-    private fun setupMarkers() {
+    private fun setupAnnotations() {
         if (branchToggle.isChecked) {
-            addBranchLayer()
+            addBranchMarkers()
         }
         if (anitaToggle.isChecked) {
             addAnitaLayer()
@@ -222,7 +244,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
                 renderMode = RenderMode.COMPASS
             }
 
-            LocationTool.getInstance(requireContext())?.subscribe(this)
+            LocationTool.getInstance(application)?.subscribe(this)
             centerCamera(currentLocation)
         }
     }
@@ -244,37 +266,37 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
 
     override fun onResume() {
         super.onResume()
-        mapView?.onResume()
+        mapView.onResume()
     }
 
     override fun onStart() {
         super.onStart()
-        mapView?.onStart()
+        mapView.onStart()
     }
 
     override fun onStop() {
         super.onStop()
-        mapView?.onStop()
+        mapView.onStop()
     }
 
     override fun onPause() {
         super.onPause()
-        mapView?.onPause()
+        mapView.onPause()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        mapView?.onLowMemory()
+        mapView.onLowMemory()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        LocationTool.getInstance(requireContext())?.unsubscribe(this)
-        mapView?.onDestroy()
+        LocationTool.getInstance(application)?.unsubscribe(this)
+        mapView.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        mapView?.onSaveInstanceState(outState)
+        mapView.onSaveInstanceState(outState)
     }
 }

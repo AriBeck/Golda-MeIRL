@@ -9,9 +9,7 @@ import com.example.goldameirl.model.BranchManager
 class MapViewModel(
     application: Application
 ) : AndroidViewModel(application) {
-    private val context = application
-
-    private val branchManager = BranchManager.getInstance(context)
+    private val branchManager = BranchManager.getInstance(application)
 
     private val _toAlerts = MutableLiveData<Boolean>()
     val toAlerts: LiveData<Boolean>
@@ -25,10 +23,5 @@ class MapViewModel(
 
     fun onAlertsClicked() {
         _toAlerts.value = false
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        branchManager?.repoJob?.cancel()
     }
 }

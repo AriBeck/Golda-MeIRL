@@ -22,29 +22,29 @@ const val DEFAULT_ALERT_TIME = 0L
 const val INTERVAL_KEY = "time"
 const val RADIUS_KEY = "radius"
 
-class AlertManager private constructor (val context: Context):
+class AlertManager private constructor (val application: Context):
     LocationChangeSuccessWorker, SharedPreferences.OnSharedPreferenceChangeListener {
     var interval: Long? = 5L
     var radius: Int? = DEFAULT_RADIUS
     private var alertTime: Long? = DEFAULT_ALERT_TIME
 
-    val branches: LiveData<List<Branch>>? = BranchManager.getInstance(context)?.branches
-    val alerts = DB.getInstance(context)?.alertDAO?.getAll()
+    val branches: LiveData<List<Branch>>? = BranchManager.getInstance(application)?.branches
+    val alerts = DB.getInstance(application)?.alertDAO?.getAll()
 
     var notificationHandler: NotificationHandler =
-        AlertNotificationHandler(context,
+        AlertNotificationHandler(application,
             ALERT_CHANNEL_ID, ALERT_GROUP_ID, R.drawable.icon_branch,
-            context.getString(R.string.alert_channel_description),
-            context.getString(R.string.alert_channel_name)
+            application.getString(R.string.alert_channel_description),
+            application.getString(R.string.alert_channel_name)
         )
 
-    var preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    var preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
 
     init {
         interval = preferences.getInt(INTERVAL_KEY, 1).times(5).toLong()
         radius = preferences.getInt(RADIUS_KEY, 5).times(100)
         preferences.registerOnSharedPreferenceChangeListener(this)
-        LocationTool.getInstance(context)?.subscribe(this)
+        LocationTool.getInstance(application)?.subscribe(this)
     }
 
     private fun sendAlertWhenNearBranchAndExceededInterval(location: Location?) {
@@ -84,7 +84,7 @@ class AlertManager private constructor (val context: Context):
 
     private suspend fun notifyAlert() {
         withContext(Dispatchers.IO) {
-            val alert = DB.getInstance(context)!!.alertDAO.getLastAlert()
+            val alert = DB.getInstance(application)!!.alertDAO.getLastAlert()
             alert?.let {
                 notificationHandler.createNotification(alert.title, alert.content, alert.id.toInt())
             }
@@ -93,7 +93,7 @@ class AlertManager private constructor (val context: Context):
 
     private suspend fun insertToDB(alert: Alert) {
         withContext(Dispatchers.IO) {
-            DB.getInstance(context)!!.alertDAO.insert(alert)
+            DB.getInstance(application)!!.alertDAO.insert(alert)
         }
     }
 
@@ -106,7 +106,7 @@ class AlertManager private constructor (val context: Context):
 
     private suspend fun deleteFromDB(alert: Alert) {
         withContext(Dispatchers.IO){
-            DB.getInstance(context)!!.alertDAO.delete(alert)
+            DB.getInstance(application)!!.alertDAO.delete(alert)
         }
     }
 
@@ -122,12 +122,12 @@ class AlertManager private constructor (val context: Context):
         @Volatile
         private var INSTANCE: AlertManager? = null
 
-        fun getInstance(context: Context): AlertManager? {
+        fun getInstance(application: Context): AlertManager? {
             synchronized(this) {
                 var instance = INSTANCE
 
                 if (instance == null) {
-                    instance = AlertManager(context)
+                    instance = AlertManager(application)
                     INSTANCE = instance
                 }
                 return instance

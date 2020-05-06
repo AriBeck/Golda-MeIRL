@@ -1,12 +1,10 @@
 package com.example.goldameirl.view
 
-import android.location.Location
+
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.*
 import androidx.navigation.ui.setupWithNavController
 import com.example.goldameirl.R
@@ -30,7 +28,7 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         if (!PermissionsManager.areLocationPermissionsGranted(application)) {
             permissionsManager.requestLocationPermissions(this)
         }
-        alertManager = AlertManager.getInstance(applicationContext)!!
+        alertManager = AlertManager.getInstance(application)!!
 
         binding = DataBindingUtil.setContentView(this,
             R.layout.activity_main)

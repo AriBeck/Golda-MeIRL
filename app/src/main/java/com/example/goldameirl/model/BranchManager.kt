@@ -2,23 +2,19 @@ package com.example.goldameirl.model
 
 import android.content.Context
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.net.URL
 
 
-class BranchManager private constructor (context: Context) {
-    private val repository = BranchRepository(context)
+class BranchManager private constructor (application: Context) {
+    private val repository = BranchRepository(application)
 
-    val repoJob = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + repoJob)
+
     val branches: LiveData<List<Branch>> = repository.branches
 
     init {
-        coroutineScope.launch {
+        CoroutineScope(Dispatchers.Default).launch {
             repository.refreshBranches()
         }
     }
@@ -27,12 +23,12 @@ class BranchManager private constructor (context: Context) {
         @Volatile
         private var INSTANCE: BranchManager? = null
 
-        fun getInstance(context: Context): BranchManager? {
+        fun getInstance(application: Context): BranchManager? {
             synchronized(this) {
                 var instance = INSTANCE
 
                 if (instance == null) {
-                    instance = BranchManager(context)
+                    instance = BranchManager(application)
                     INSTANCE = instance
                 }
 

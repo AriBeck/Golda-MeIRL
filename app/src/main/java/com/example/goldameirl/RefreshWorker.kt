@@ -7,8 +7,8 @@ import androidx.work.WorkerParameters
 import com.example.goldameirl.model.BranchRepository
 import retrofit2.HttpException
 
-class RefreshWorker(appContext: Context, params: WorkerParameters) :
-    CoroutineWorker(appContext, params) {
+class RefreshWorker(application: Context, params: WorkerParameters) :
+    CoroutineWorker(application, params) {
 
     companion object {
         const val WORK_NAME = "com.example.goldameirl.RefreshWorker"

@@ -10,8 +10,8 @@ import com.example.goldameirl.model.Branch
 @Dao
 interface BranchDAO {
     @Query("SELECT * FROM Branches")
-    fun getAll(): LiveData<List<Branch>> // getAll
+    fun getAll(): LiveData<List<Branch>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(branchList: List<Branch>) // don't need list in title
+    fun insert(branchList: List<Branch>)
 }
