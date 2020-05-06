@@ -47,7 +47,7 @@ import java.net.URI
 
 const val DEFAULT_ZOOM = 15.0
 
-class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker {
+class MapFragment : Fragment(){
     private lateinit var application: Application
     private lateinit var mainActivity: MainActivity
     lateinit var viewModel: MapViewModel
@@ -55,10 +55,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
 
     private lateinit var preferences: SharedPreferences
 
-    private var currentLocation: Location = Location("currentLocation")
-
     private lateinit var mapView: MapView
-    lateinit var mapboxMap: MapboxMap
 
     var branches: List<Branch> = ArrayList()
 
@@ -86,19 +83,23 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         binding.viewModel = viewModel
         mapView = binding.mapView
         mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync(this)
+        mapView.getMapAsync(viewModel)
 
         observeViewModel()
-
         initButtons()
         initToggles()
-
-        currentLocation = LocationTool.getInstance(application)?.currentLocation!!
 
         return binding.root
     }
 
     private fun observeViewModel() {
+        viewModel.mapReady.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                setupAnnotations()
+                setLayerToggleListeners()
+            }
+        })
+
         viewModel.toAlerts.observe(viewLifecycleOwner, Observer { toAlerts ->
             if (toAlerts) {
                 this.findNavController().navigate(
@@ -120,7 +121,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         }
 
         binding.locationButton.setOnClickListener {
-            centerCamera(currentLocation)
+            viewModel.centerCamera()
         }
     }
 
@@ -136,25 +137,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
         anitaToggle.isChecked = preferences.getBoolean("anitaToggle", true)
     }
 
-    override fun onMapReady(mapboxMap: MapboxMap) {
-        this.mapboxMap = mapboxMap
-
-        mapboxMap.setStyle(Style.DARK) {
-            addAnitaSource(it)
-            enableLocationComponent(it)
-        }
-
-        setLayerToggleListeners()
-
-        setupAnnotations()
-    }
-
     private fun setLayerToggleListeners() {
         branchToggle.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                addBranchMarkers()
+                viewModel.addBranchMarkers()
             } else {
-                clearMarkers()
+                viewModel.clearMarkers()
             }
 
             preferences.edit().putBoolean("branchToggle", isChecked).apply()
@@ -162,106 +150,22 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
 
         anitaToggle.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                addAnitaLayer()
+                viewModel.addAnitaLayer()
             } else {
-                removeAnitaLayer()
+                viewModel.removeAnitaLayer()
             }
 
             preferences.edit().putBoolean("anitaToggle", isChecked).apply()
         }
     }
 
-    private fun removeAnitaLayer() {
-        this.mapboxMap.getStyle {
-            it.removeLayer("anita-layer")
-        }
-    }
-
-    private fun clearMarkers() {
-        this.mapboxMap.clear()
-    }
-
-    private fun addAnitaSource(style: Style) {
-        try {
-            val anitaGeoJsonUrl = URI("https://wow-final.firebaseio.com/anita.json")
-            val anitaGeoJsonSource = GeoJsonSource("anita-source", anitaGeoJsonUrl)
-            style.addSource(anitaGeoJsonSource)
-        } catch (e: Exception) { }
-
-        val icon = BitmapFactory.decodeResource(resources, R.drawable.icon_anita)
-        style.addImage("anita-icon", icon)
-    }
-
-    private fun addBranchMarkers() {
-        branches.forEach { branch ->
-            mapboxMap.addMarker(
-                (MarkerOptions()
-                    .position(LatLng(branch.latitude, branch.longitude))
-                    .setIcon(
-                        IconFactory.getInstance(application)
-                            .fromResource(R.drawable.icon_branch)
-                    )
-                    .title(branch.name)
-                    .setSnippet(branch.address)
-                        )
-            )
-        }
-    }
-
-    private fun addAnitaLayer() {
-        mapboxMap.getStyle {
-            val anitaSymbolLayer = SymbolLayer("anita-layer", "anita-source")
-            anitaSymbolLayer.setProperties(PropertyFactory.iconImage("anita-icon"))
-            it.addLayer(anitaSymbolLayer)
-        }
-    }
-
     private fun setupAnnotations() {
         if (branchToggle.isChecked) {
-            addBranchMarkers()
+            viewModel.addBranchMarkers()
         }
         if (anitaToggle.isChecked) {
-            addAnitaLayer()
+            viewModel.addAnitaLayer()
         }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun enableLocationComponent(loadedMapStyle: Style) {
-        if (PermissionsManager.areLocationPermissionsGranted(application)) {
-            val customLocationComponentOptions = LocationComponentOptions.builder(application)
-                .trackingGesturesManagement(true)
-                .build()
-
-            val locationComponentActivationOptions =
-                LocationComponentActivationOptions.builder(application, loadedMapStyle)
-                    .locationComponentOptions(customLocationComponentOptions)
-                    .build()
-
-            mapboxMap.locationComponent.apply {
-                activateLocationComponent(locationComponentActivationOptions)
-                isLocationComponentEnabled = true
-                cameraMode = CameraMode.TRACKING
-                renderMode = RenderMode.COMPASS
-            }
-
-            LocationTool.getInstance(application)?.subscribe(this)
-            centerCamera(currentLocation)
-        }
-    }
-
-    private fun centerCamera(center: Location) {
-        mapboxMap.animateCamera(CameraUpdateFactory
-            .newLatLngZoom(LatLng(center.latitude, center.longitude), DEFAULT_ZOOM)
-        )
-    }
-
-    override fun doWork(newLocation: Location) {
-        if (newLocation.distanceTo(currentLocation) >= 100) {
-            mapboxMap.locationComponent.forceLocationUpdate(newLocation)
-            centerCamera(newLocation)
-        }
-
-        currentLocation = newLocation
     }
 
     override fun onResume() {
@@ -291,7 +195,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
 
     override fun onDestroy() {
         super.onDestroy()
-        LocationTool.getInstance(application)?.unsubscribe(this)
         mapView.onDestroy()
     }
 
