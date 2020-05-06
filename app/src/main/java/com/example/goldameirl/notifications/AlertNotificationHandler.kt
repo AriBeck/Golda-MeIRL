@@ -2,6 +2,7 @@ package com.example.goldameirl.notifications
 
 
 import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -37,8 +38,6 @@ class AlertNotificationHandler(override val context: Context,
             .setAutoCancel(true)
             .addAction(android.R.drawable.ic_menu_share, "Share", shareIntent)
             .build()
-
-//        incrementID()
 
         NotificationManagerCompat.from(context).notify(id, notification)
     }

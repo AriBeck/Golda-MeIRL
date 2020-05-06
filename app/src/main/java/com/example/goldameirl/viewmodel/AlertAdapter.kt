@@ -11,6 +11,7 @@ import com.example.goldameirl.R
 import com.example.goldameirl.databinding.AlertListItemBinding
 import com.example.goldameirl.db.DB
 import com.example.goldameirl.model.Alert
+import com.example.goldameirl.model.AlertManager
 import kotlinx.coroutines.*
 
 class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBack()) {
@@ -43,6 +44,11 @@ class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBac
                 }
                 binding.root.context.startActivity(shareIntent)
             }
+
+            binding.deleteButton.setOnClickListener {
+                AlertManager.getInstance(binding.root.context)?.delete(item)
+            }
+
             binding.checkBox.apply {
                 setOnClickListener {
                     val isChecked = binding.checkBox.isChecked

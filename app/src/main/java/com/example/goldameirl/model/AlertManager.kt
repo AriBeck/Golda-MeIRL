@@ -12,10 +12,7 @@ import com.example.goldameirl.location.LocationTool
 import com.example.goldameirl.misc.*
 import com.example.goldameirl.notifications.AlertNotificationHandler
 import com.example.goldameirl.notifications.NotificationHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
 const val DEFAULT_RADIUS = 500
@@ -81,18 +78,15 @@ class AlertManager private constructor (val context: Context):
 
         CoroutineScope(Dispatchers.Default).launch {
             insertToDB(newAlert)
+            notifyAlert()
         }
-
-        notifyAlert()
     }
 
-    private fun notifyAlert() {
-        CoroutineScope(Dispatchers.Default).launch {
-            withContext(Dispatchers.IO){
-                val alert = DB.getInstance(context)!!.alertDAO.getLastAlert()
-                alert?.let {
-                    notificationHandler.createNotification(alert.title, alert.content, alert.id.toInt())
-                }
+    private suspend fun notifyAlert() {
+        withContext(Dispatchers.IO) {
+            val alert = DB.getInstance(context)!!.alertDAO.getLastAlert()
+            alert?.let {
+                notificationHandler.createNotification(alert.title, alert.content, alert.id.toInt())
             }
         }
     }
@@ -101,6 +95,23 @@ class AlertManager private constructor (val context: Context):
         withContext(Dispatchers.IO) {
             DB.getInstance(context)!!.alertDAO.insert(alert)
         }
+    }
+
+    fun delete(alert: Alert) {
+        CoroutineScope(Dispatchers.Default).launch {
+            cancelNotification(alert)
+            deleteFromDB(alert)
+        }
+    }
+
+    private suspend fun deleteFromDB(alert: Alert) {
+        withContext(Dispatchers.IO){
+            DB.getInstance(context)!!.alertDAO.delete(alert)
+        }
+    }
+
+    private fun cancelNotification(alert: Alert) {
+        notificationHandler.cancel(alert.id.toInt())
     }
 
     override fun doWork(newLocation: Location) {

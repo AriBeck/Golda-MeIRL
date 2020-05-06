@@ -21,6 +21,6 @@ interface AlertDAO {
     @Update
     fun update(alert: Alert)
 
-    @Query("DELETE FROM Alerts")
-    fun clear()
+    @Delete
+    fun delete(alert: Alert)
 }

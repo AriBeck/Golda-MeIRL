@@ -15,7 +15,7 @@ interface NotificationHandler {
     val channelDescription: String
     val channelName: String
 
-    fun newChannel (): NotificationChannel? {
+    fun newChannel(): NotificationChannel? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(channelID, channelName, importance).apply {
@@ -40,5 +40,9 @@ interface NotificationHandler {
             .build()
 
         NotificationManagerCompat.from(context).notify(id, notification)
+    }
+
+    fun cancel(id: Int) {
+        NotificationManagerCompat.from(context).cancel(id)
     }
 }
