@@ -75,4 +75,5 @@
         </com.mapbox.mapboxsdk.maps.MapView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </layout>

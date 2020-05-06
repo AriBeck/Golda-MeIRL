@@ -26,7 +26,6 @@ import com.example.goldameirl.model.Branch
 import com.example.goldameirl.viewmodel.MapViewModel
 import com.example.goldameirl.viewmodel.MapViewModelFactory
 import com.mapbox.android.core.permissions.PermissionsManager
-import com.mapbox.geojson.FeatureCollection
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.Marker
@@ -167,7 +166,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, LocationChangeSuccessWorker 
             style.addSource(anitaGeoJsonSource)
         } catch (e: Exception) { }
 
-        val icon = BitmapFactory.decodeResource(resources, R.drawable.icon_annita)
+        val icon = BitmapFactory.decodeResource(resources, R.drawable.icon_anita)
         style.addImage("anita-icon", icon)
     }
 

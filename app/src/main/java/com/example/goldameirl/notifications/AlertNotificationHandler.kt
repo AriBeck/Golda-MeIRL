@@ -5,11 +5,13 @@ import android.app.NotificationChannel
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
+import android.preference.PreferenceManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.goldameirl.view.MainActivity
 
-class AlertNotificationHandler(override val context: Context, override val id: Int,
+class AlertNotificationHandler(override val context: Context,
                                override val channelID: String, override val groupID: String,
                                override val iconID: Int, override val channelDescription: String,
                                override val channelName: String) :
@@ -18,7 +20,7 @@ class AlertNotificationHandler(override val context: Context, override val id: I
     private lateinit var shareIntent: PendingIntent
     private var channel: NotificationChannel? = null
 
-    override fun createNotification(title: String, content: String) {
+    override fun createNotification(title: String, content: String, id: Int) {
         if(channel == null) {
             channel =  newChannel()
         }
@@ -35,6 +37,8 @@ class AlertNotificationHandler(override val context: Context, override val id: I
             .setAutoCancel(true)
             .addAction(android.R.drawable.ic_menu_share, "Share", shareIntent)
             .build()
+
+//        incrementID()
 
         NotificationManagerCompat.from(context).notify(id, notification)
     }

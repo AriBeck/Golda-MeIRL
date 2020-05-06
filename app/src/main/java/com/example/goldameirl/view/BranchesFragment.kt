@@ -19,7 +19,6 @@ class BranchesFragment : Fragment(){
 
     private lateinit var viewModel: BranchesViewModel
     private lateinit var adapter: BranchAdapter
-    private lateinit var mainActivity: MainActivity
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,6 +51,8 @@ class BranchesFragment : Fragment(){
                 }
             }
         })
+
+        binding.branchesList.adapter
 
         binding.abcChip.setOnCheckedChangeListener { buttonView, isChecked ->
             viewModel.onChipChecked(buttonView, isChecked)

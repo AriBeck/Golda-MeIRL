@@ -3,15 +3,17 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
     <group
         android:id="@+id/group_one">
-        <item android:title="Layers">
+        <item android:title="@string/layer_menu_title">
             <menu>
                 <item
                     android:id="@+id/branch_layer_item"
+                    android:icon="@drawable/icon_branch"
                     android:title="@string/branch_layer"
                     app:actionLayout="@layout/switch_item" />
 
                 <item
                     android:id="@+id/anita_layer_item"
+                    android:icon="@drawable/icon_anita"
                     android:title="@string/anita_layer"
                     app:actionLayout="@layout/switch_item" />
             </menu>

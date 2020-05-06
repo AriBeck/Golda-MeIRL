@@ -20,7 +20,8 @@
 
     <string name="alert_channel_name">Golda Branch Alerts</string>
 
-    <string name="branch_layer">Golda Branches</string>
-    <string name="anita_layer">Anita Branches</string>
+    <string name="branch_layer">Golda</string>
+    <string name="anita_layer">Anita</string>
+    <string name="layer_menu_title">Layers</string>
 
 </resources>

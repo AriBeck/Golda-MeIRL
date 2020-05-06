@@ -22,7 +22,6 @@ const val DEFAULT_RADIUS = 500
 const val DEFAULT_INTERVAL = 5L
 const val DEFAULT_ALERT_TIME = 0L
 
-
 const val INTERVAL_KEY = "time"
 const val RADIUS_KEY = "radius"
 
@@ -36,8 +35,7 @@ class AlertManager private constructor (val context: Context):
     val alerts = DB.getInstance(context)?.alertDAO?.getAll()
 
     var notificationHandler: NotificationHandler =
-        AlertNotificationHandler(
-            context, ALERT_NOTIFICATION_ID,
+        AlertNotificationHandler(context,
             ALERT_CHANNEL_ID, ALERT_GROUP_ID, R.drawable.icon_branch,
             context.getString(R.string.alert_channel_description),
             context.getString(R.string.alert_channel_name)
@@ -60,11 +58,7 @@ class AlertManager private constructor (val context: Context):
                 hasTimeSinceLastAlertExceededInterval(branch)) {
                 storeAlertTime(branch)
 
-                CoroutineScope(Dispatchers.Default).launch {
-                    insertAlertToDB(branch.name, branch.discounts)
-                }
-
-                notifyAlert(branch.name, branch.discounts)
+                sendAlert(branch.name, branch.discounts)
             }
         }
     }
@@ -82,14 +76,30 @@ class AlertManager private constructor (val context: Context):
             .convert(interval ?: DEFAULT_INTERVAL, TimeUnit.MINUTES)
     }
 
-    private fun notifyAlert(title: String, content: String) {
-        notificationHandler.createNotification(title, content)
+    private fun sendAlert(title: String, content: String) {
+        val newAlert = Alert(title = title, content = content)
+
+        CoroutineScope(Dispatchers.Default).launch {
+            insertToDB(newAlert)
+        }
+
+        notifyAlert()
     }
 
-    private suspend fun insertAlertToDB(title: String, content: String) {
+    private fun notifyAlert() {
+        CoroutineScope(Dispatchers.Default).launch {
+            withContext(Dispatchers.IO){
+                val alert = DB.getInstance(context)!!.alertDAO.getLastAlert()
+                alert?.let {
+                    notificationHandler.createNotification(alert.title, alert.content, alert.id.toInt())
+                }
+            }
+        }
+    }
+
+    private suspend fun insertToDB(alert: Alert) {
         withContext(Dispatchers.IO) {
-            val newAlert = Alert(title = title, content = content)
-            DB.getInstance(context)!!.alertDAO.insert(newAlert)
+            DB.getInstance(context)!!.alertDAO.insert(alert)
         }
     }
 

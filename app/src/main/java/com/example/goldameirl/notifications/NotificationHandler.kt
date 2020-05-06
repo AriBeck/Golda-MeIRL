@@ -9,7 +9,6 @@ import androidx.core.app.NotificationManagerCompat
 
 interface NotificationHandler {
     val context: Context
-    val id: Int
     val channelID: String
     val groupID: String
     val iconID: Int
@@ -31,7 +30,7 @@ interface NotificationHandler {
         return null
     }
 
-    fun createNotification(title: String, content: String) {
+    fun createNotification(title: String, content: String, id: Int) {
         val notification = NotificationCompat.Builder(context, channelID)
             .setSmallIcon(iconID)
             .setContentTitle(title)

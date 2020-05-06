@@ -5,4 +5,3 @@ const val TOKEN =
 
 const val ALERT_CHANNEL_ID = "com.example.goldameirl.discounts"
 const val ALERT_GROUP_ID = "com.example.goldameirl"
-const val ALERT_NOTIFICATION_ID = 1
