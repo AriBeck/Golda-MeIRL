@@ -1,7 +1,6 @@
 package com.example.goldameirl.model
 
 import android.content.Context
-import androidx.lifecycle.LiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -10,12 +9,13 @@ import kotlinx.coroutines.launch
 class BranchManager private constructor (application: Context) {
     private val repository = BranchRepository(application)
 
-
-    val branches: LiveData<List<Branch>> = repository.branches
+    val branches = repository.branches
+    val anitaJson = repository.anitaJson
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
             repository.refreshBranches()
+            repository.getAnitaSource()
         }
     }
 

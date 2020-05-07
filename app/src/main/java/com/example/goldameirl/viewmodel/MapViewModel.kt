@@ -7,10 +7,10 @@ import android.location.Location
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.goldameirl.GoldaApplication
 import com.example.goldameirl.R
 import com.example.goldameirl.location.LocationChangeSuccessWorker
 import com.example.goldameirl.location.LocationTool
+import com.example.goldameirl.model.Branch
 import com.example.goldameirl.model.BranchManager
 import com.example.goldameirl.view.DEFAULT_ZOOM
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -28,17 +28,13 @@ import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import java.lang.Exception
-import java.net.URI
 
 class MapViewModel(
      application: Application
 ) : AndroidViewModel(application), OnMapReadyCallback, LocationChangeSuccessWorker {
     val app = getApplication<Application>()
     private val branchManager = BranchManager.getInstance(app)
-
-
-    lateinit var mapboxMap: MapboxMap
+    private lateinit var mapboxMap: MapboxMap
 
     private val _mapReady = MutableLiveData<Boolean>()
     val mapReady: LiveData<Boolean>
@@ -50,16 +46,26 @@ class MapViewModel(
 
     private var currentLocation = LocationTool.getInstance(application)?.currentLocation!!
 
+    private var branches: List<Branch>? = null
 
-
-    val branches = branchManager?.branches
+    init {
+        branchManager?.branches?.observeForever { branches ->
+            this.branches = branches
+        }
+    }
 
     override fun onMapReady(mapboxMap: MapboxMap) {
         this.mapboxMap = mapboxMap
         mapboxMap.setStyle(Style.DARK) {
-            addAnitaSource(it)
             enableLocationComponent(it)
+
+            branchManager?.anitaJson?.observeForever { anitaJson ->
+                it.addImage("anita-icon",
+                    BitmapFactory.decodeResource(app.resources, R.drawable.icon_anita))
+                it.addSource(getAnitaSource(anitaJson))
+            }
         }
+
         _mapReady.value = true
         _mapReady.value = false
     }
@@ -74,19 +80,12 @@ class MapViewModel(
         mapboxMap.clear()
     }
 
-    private fun addAnitaSource(style: Style) {
-        try {
-            val anitaGeoJsonUrl = URI("https://wow-final.firebaseio.com/anita.json")
-            val anitaGeoJsonSource = GeoJsonSource("anita-source", anitaGeoJsonUrl)
-            style.addSource(anitaGeoJsonSource)
-        } catch (e: Exception) { }
-
-        val icon = BitmapFactory.decodeResource( app.resources, R.drawable.icon_anita)
-        style.addImage("anita-icon", icon)
+    private fun getAnitaSource(anitaJson: String): GeoJsonSource {
+        return GeoJsonSource("anita-source", anitaJson)
     }
 
     fun addBranchMarkers() {
-        branches?.value?.forEach { branch ->
+        branches?.forEach { branch ->
             mapboxMap.addMarker(
                 (MarkerOptions()
                     .position(LatLng(branch.latitude, branch.longitude))
@@ -142,7 +141,7 @@ class MapViewModel(
 
     override fun doWork(newLocation: Location) {
         if (newLocation.distanceTo(currentLocation) >= 100) {
-            mapboxMap.locationComponent?.forceLocationUpdate(newLocation)
+            mapboxMap.locationComponent.forceLocationUpdate(newLocation)
             centerCamera()
         }
 

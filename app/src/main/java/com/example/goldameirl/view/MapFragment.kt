@@ -1,10 +1,7 @@
 package com.example.goldameirl.view
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.SharedPreferences
-import android.graphics.BitmapFactory
-import android.location.Location
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.LayoutInflater
@@ -19,31 +16,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentMapBinding
-import com.example.goldameirl.location.LocationChangeSuccessWorker
-import com.example.goldameirl.location.LocationTool
 import com.example.goldameirl.misc.TOKEN
-import com.example.goldameirl.model.Branch
 import com.example.goldameirl.viewmodel.MapViewModel
 import com.example.goldameirl.viewmodel.MapViewModelFactory
-import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.Mapbox
-import com.mapbox.mapboxsdk.annotations.IconFactory
-import com.mapbox.mapboxsdk.annotations.MarkerOptions
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
-import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
-import com.mapbox.mapboxsdk.location.LocationComponentOptions
-import com.mapbox.mapboxsdk.location.modes.CameraMode
-import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
-import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
-import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer
-import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
-import java.lang.Exception
-import java.net.URI
 
 const val DEFAULT_ZOOM = 15.0
 
@@ -56,9 +33,6 @@ class MapFragment : Fragment(){
     private lateinit var preferences: SharedPreferences
 
     private lateinit var mapView: MapView
-
-    var branches: List<Branch> = ArrayList()
-
     private lateinit var branchToggle: Switch
     private lateinit var anitaToggle: Switch
 
@@ -70,7 +44,7 @@ class MapFragment : Fragment(){
         application = requireActivity().application
         Mapbox.getInstance(application, TOKEN)
 
-        binding = DataBindingUtil.inflate<FragmentMapBinding>(
+        binding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_map, container, false
         )
 
@@ -109,19 +83,11 @@ class MapFragment : Fragment(){
                 viewModel.onAlertsClicked()
             }
         })
-
-        viewModel.branches?.observe(viewLifecycleOwner, Observer { refreshedBranches ->
-            branches = refreshedBranches
-        })
     }
 
     private fun initButtons() {
         binding.menuButton.setOnClickListener {
             mainActivity.binding.drawerLayout.openDrawer(GravityCompat.START)
-        }
-
-        binding.locationButton.setOnClickListener {
-            viewModel.centerCamera()
         }
     }
 

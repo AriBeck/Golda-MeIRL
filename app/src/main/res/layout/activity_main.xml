@@ -41,12 +41,12 @@
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        style="@style/Theme.AppCompat.DayNight.NoActionBar"
-        app:menu="@menu/layer_menu" />
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            style="@style/Theme.AppCompat.DayNight.NoActionBar"
+            app:menu="@menu/layer_menu" />
 
-    </androidx.drawerlayout.widget.DrawerLayout>
+        </androidx.drawerlayout.widget.DrawerLayout>
 
 </layout>
