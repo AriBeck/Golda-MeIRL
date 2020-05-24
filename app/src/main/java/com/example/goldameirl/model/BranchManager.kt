@@ -15,7 +15,7 @@ class BranchManager private constructor (application: Context) {
     init {
         CoroutineScope(Dispatchers.Default).launch {
             repository.refreshBranches()
-            repository.getAnitaSource()
+            repository.getGeoJson("anita")
         }
     }
 

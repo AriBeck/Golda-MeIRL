@@ -27,4 +27,6 @@
     <string name="location_chip">Location</string>
     <string name="sort_label">Sort By:</string>
 
+    <string name="share_message">Hey check out this great deal!\n</string>
+
 </resources>

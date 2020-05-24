@@ -3,7 +3,7 @@ package com.example.goldameirl.location
 import android.content.Context
 import android.location.Location
 import android.os.Looper
-import com.example.goldameirl.model.DEFAULT_RADIUS
+import com.example.goldameirl.misc.DEFAULT_RADIUS
 import com.mapbox.android.core.location.*
 import java.lang.Exception
 
@@ -17,6 +17,17 @@ class LocationTool private constructor(
 
     init {
         initLocationEngine()
+    }
+
+    private fun initLocationEngine() {
+        locationEngine = LocationEngineProvider.getBestLocationEngine(application)
+        val request = LocationEngineRequest
+            .Builder(1000)
+            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+            .setMaxWaitTime(5000)
+            .build()
+        locationEngine.requestLocationUpdates(request, locationChangeCallback, Looper.myLooper())
+        locationEngine.getLastLocation(locationChangeCallback)
     }
 
     companion object {
@@ -43,17 +54,6 @@ class LocationTool private constructor(
         }
     }
 
-    private fun initLocationEngine() {
-        locationEngine = LocationEngineProvider.getBestLocationEngine(application)
-        val request = LocationEngineRequest
-            .Builder(1000)
-            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
-            .setMaxWaitTime(5000)
-            .build()
-        locationEngine.requestLocationUpdates(request, locationChangeCallback, Looper.myLooper())
-        locationEngine.getLastLocation(locationChangeCallback)
-    }
-
     fun subscribe(worker: LocationChangeSuccessWorker){
         locationChangeSuccessWorkers.add(worker)
     }
@@ -62,7 +62,7 @@ class LocationTool private constructor(
         locationChangeSuccessWorkers.remove(worker)
     }
 
-    inner class LocationChangeListeningCallback():
+    inner class LocationChangeListeningCallback:
         LocationEngineCallback<LocationEngineResult> {
 
         override fun onSuccess(result: LocationEngineResult?) {

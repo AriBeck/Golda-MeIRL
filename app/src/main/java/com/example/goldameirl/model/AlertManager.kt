@@ -15,16 +15,9 @@ import com.example.goldameirl.notifications.NotificationHandler
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
-const val DEFAULT_RADIUS = 500
-const val DEFAULT_INTERVAL = 5L
-const val DEFAULT_ALERT_TIME = 0L
-
-const val INTERVAL_KEY = "time"
-const val RADIUS_KEY = "radius"
-
 class AlertManager private constructor (val application: Context):
     LocationChangeSuccessWorker, SharedPreferences.OnSharedPreferenceChangeListener {
-    var interval: Long? = 5L
+    var interval: Long? = DEFAULT_INTERVAL
     var radius: Int? = DEFAULT_RADIUS
     private var alertTime: Long? = DEFAULT_ALERT_TIME
 

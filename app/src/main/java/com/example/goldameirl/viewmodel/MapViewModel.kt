@@ -7,12 +7,16 @@ import android.location.Location
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.example.goldameirl.R
 import com.example.goldameirl.location.LocationChangeSuccessWorker
 import com.example.goldameirl.location.LocationTool
+import com.example.goldameirl.misc.ANITA_ICON_ID
+import com.example.goldameirl.misc.ANITA_LAYER_ID
+import com.example.goldameirl.misc.ANITA_SOURCE_ID
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.model.BranchManager
-import com.example.goldameirl.view.DEFAULT_ZOOM
+import com.example.goldameirl.misc.DEFAULT_ZOOM
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
@@ -48,10 +52,14 @@ class MapViewModel(
 
     private var branches: List<Branch>? = null
 
+    private lateinit var anitaJsonObserver: Observer<String>
+    private var goldaBranchesObserver: Observer<List<Branch>>
+
     init {
-        branchManager?.branches?.observeForever { branches ->
+        goldaBranchesObserver = Observer { branches ->
             this.branches = branches
         }
+        branchManager?.branches?.observeForever(goldaBranchesObserver)
     }
 
     override fun onMapReady(mapboxMap: MapboxMap) {
@@ -59,32 +67,32 @@ class MapViewModel(
         mapboxMap.setStyle(Style.DARK) {
             enableLocationComponent(it)
 
-            branchManager?.anitaJson?.observeForever { anitaJson ->
-                it.addImage("anita-icon",
-                    BitmapFactory.decodeResource(app.resources, R.drawable.icon_anita))
-                it.addSource(getAnitaSource(anitaJson))
+            anitaJsonObserver = Observer { anitaJson ->
+                it.addImage(
+                    ANITA_ICON_ID,
+                    BitmapFactory.decodeResource(app.resources, R.drawable.icon_anita)
+                )
+                it.addSource(GeoJsonSource(ANITA_SOURCE_ID, anitaJson))
             }
+
+            branchManager?.anitaJson?.observeForever(anitaJsonObserver)
+            _mapReady.value = true
+            _mapReady.value = false
         }
 
-        _mapReady.value = true
-        _mapReady.value = false
     }
 
-    fun removeAnitaLayer() {
+    fun removeLayer(layerID: String) {
         mapboxMap.getStyle {
-            it.removeLayer("anita-layer")
+            it.removeLayer(layerID)
         }
     }
 
-    fun clearMarkers() {
+    fun removeGoldaMarkers() {
         mapboxMap.clear()
     }
 
-    private fun getAnitaSource(anitaJson: String): GeoJsonSource {
-        return GeoJsonSource("anita-source", anitaJson)
-    }
-
-    fun addBranchMarkers() {
+    fun addGoldaMarkers() {
         branches?.forEach { branch ->
             mapboxMap.addMarker(
                 (MarkerOptions()
@@ -100,11 +108,17 @@ class MapViewModel(
         }
     }
 
-    fun addAnitaLayer() {
+    fun addLayer(layerID: String) {
         mapboxMap.getStyle {
-            val anitaSymbolLayer = SymbolLayer("anita-layer", "anita-source")
-            anitaSymbolLayer.setProperties(PropertyFactory.iconImage("anita-icon"))
-            it.addLayer(anitaSymbolLayer)
+            var symbolLayer: SymbolLayer? = null
+
+            when (layerID) {
+                ANITA_LAYER_ID -> {
+            symbolLayer = SymbolLayer(layerID, ANITA_SOURCE_ID)
+            symbolLayer.setProperties(PropertyFactory.iconImage(ANITA_ICON_ID))
+                }
+            }
+                it.addLayer(symbolLayer!!)
         }
     }
 
@@ -135,7 +149,10 @@ class MapViewModel(
     fun centerCamera() {
         mapboxMap.animateCamera(
             CameraUpdateFactory
-                .newLatLngZoom(LatLng(currentLocation.latitude, currentLocation.longitude), DEFAULT_ZOOM)
+                .newLatLngZoom(
+                    LatLng(currentLocation.latitude, currentLocation.longitude),
+                    DEFAULT_ZOOM
+                )
         )
     }
 
@@ -158,6 +175,10 @@ class MapViewModel(
 
     override fun onCleared() {
         LocationTool.getInstance(app)?.unsubscribe(this)
+        branchManager?.apply {
+            anitaJson.removeObserver(anitaJsonObserver)
+            branches.removeObserver(goldaBranchesObserver)
+        }
         super.onCleared()
     }
 }

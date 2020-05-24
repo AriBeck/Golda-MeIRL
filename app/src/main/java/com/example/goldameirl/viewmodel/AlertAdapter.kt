@@ -37,7 +37,8 @@ class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBac
                 shareIntent.apply {
                     action = Intent.ACTION_SEND
                     putExtra(
-                        Intent.EXTRA_TEXT, "Hey check out this great deal!\n" +
+                        Intent.EXTRA_TEXT,
+                        binding.root.context.getString(R.string.share_message) +
                                 "${item.content} at ${item.title}!"
                     )
                     type = "text/plain"
@@ -100,6 +101,10 @@ class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBac
                     ContextCompat
                         .getColor(binding.root.context, R.color.secondaryTextColor)
                 )
+                deleteButton.setColorFilter(
+                    ContextCompat
+                        .getColor(binding.root.context, R.color.secondaryTextColor)
+                )
             }
         }
 
@@ -126,6 +131,10 @@ class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBac
                             .getColor(binding.root.context, R.color.primaryTextColor)
                     )
                 shareButton.setColorFilter(
+                    ContextCompat
+                        .getColor(binding.root.context, R.color.primaryTextColor)
+                )
+                deleteButton.setColorFilter(
                     ContextCompat
                         .getColor(binding.root.context, R.color.primaryTextColor)
                 )

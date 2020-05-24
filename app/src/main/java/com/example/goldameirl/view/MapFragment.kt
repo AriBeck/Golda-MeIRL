@@ -16,13 +16,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentMapBinding
+import com.example.goldameirl.misc.ANITA_LAYER_ID
 import com.example.goldameirl.misc.TOKEN
 import com.example.goldameirl.viewmodel.MapViewModel
 import com.example.goldameirl.viewmodel.MapViewModelFactory
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.maps.MapView
 
-const val DEFAULT_ZOOM = 15.0
 
 class MapFragment : Fragment(){
     private lateinit var application: Application
@@ -106,9 +106,9 @@ class MapFragment : Fragment(){
     private fun setLayerToggleListeners() {
         branchToggle.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                viewModel.addBranchMarkers()
+                viewModel.addGoldaMarkers()
             } else {
-                viewModel.clearMarkers()
+                viewModel.removeGoldaMarkers()
             }
 
             preferences.edit().putBoolean("branchToggle", isChecked).apply()
@@ -116,9 +116,9 @@ class MapFragment : Fragment(){
 
         anitaToggle.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                viewModel.addAnitaLayer()
+                viewModel.addLayer(ANITA_LAYER_ID)
             } else {
-                viewModel.removeAnitaLayer()
+                viewModel.removeLayer(ANITA_LAYER_ID)
             }
 
             preferences.edit().putBoolean("anitaToggle", isChecked).apply()
@@ -127,10 +127,10 @@ class MapFragment : Fragment(){
 
     private fun setupAnnotations() {
         if (branchToggle.isChecked) {
-            viewModel.addBranchMarkers()
+            viewModel.addGoldaMarkers()
         }
         if (anitaToggle.isChecked) {
-            viewModel.addAnitaLayer()
+            viewModel.addLayer(ANITA_LAYER_ID)
         }
     }
 
