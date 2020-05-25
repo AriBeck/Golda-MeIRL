@@ -3,7 +3,6 @@ package com.example.goldameirl.model
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import com.example.goldameirl.db.DB
-import com.example.goldameirl.misc.BASE_URL
 import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -22,7 +21,6 @@ class BranchRepository(application: Context) {
     }
 
     fun getGeoJson(source: String) {
-        //val jsonUrl = "$BASE_URL$source.json"
         BranchAPI.geoJsonRetrofitService.getGeoJson(source).enqueue(
             object: Callback<String> {
                 override fun onFailure(call: Call<String>, t: Throwable) {
