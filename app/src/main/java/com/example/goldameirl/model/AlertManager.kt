@@ -24,7 +24,7 @@ class AlertManager private constructor (val application: Context):
     val branches: LiveData<List<Branch>>? = BranchManager.getInstance(application)?.branches
     val alerts = DB.getInstance(application)?.alertDAO?.getAll()
 
-    var notificationHandler: NotificationHandler =
+    private val notificationHandler: NotificationHandler =
         AlertNotificationHandler(application,
             ALERT_CHANNEL_ID, ALERT_GROUP_ID, R.drawable.icon_branch,
             application.getString(R.string.alert_channel_description),
@@ -70,22 +70,19 @@ class AlertManager private constructor (val application: Context):
         val newAlert = Alert(title = title, content = content)
 
         CoroutineScope(Dispatchers.Default).launch {
-            insertToDB(newAlert)
-            notifyAlert()
+            val id = insertToDB(newAlert)
+            notify(id, newAlert)
         }
     }
 
-    private suspend fun notifyAlert() {
+    private suspend fun notify(id: Long?, alert: Alert) {
         withContext(Dispatchers.IO) {
-            val alert = DB.getInstance(application)!!.alertDAO.getLastAlert()
-            alert?.let {
-                notificationHandler.createNotification(alert.title, alert.content, alert.id.toInt())
-            }
+            notificationHandler.createNotification(alert.title, alert.content, id!!.toInt())
         }
     }
 
-    private suspend fun insertToDB(alert: Alert) {
-        withContext(Dispatchers.IO) {
+    private suspend fun insertToDB(alert: Alert): Long? {
+        return withContext(Dispatchers.IO) {
             DB.getInstance(application)!!.alertDAO.insert(alert)
         }
     }
@@ -100,6 +97,14 @@ class AlertManager private constructor (val application: Context):
     private suspend fun deleteFromDB(alert: Alert) {
         withContext(Dispatchers.IO){
             DB.getInstance(application)!!.alertDAO.delete(alert)
+        }
+    }
+
+    fun update(alert: Alert) {
+        CoroutineScope(Dispatchers.Default).launch {
+            withContext(Dispatchers.IO) {
+                DB.getInstance(application)?.alertDAO?.update(alert)
+            }
         }
     }
 

@@ -12,7 +12,6 @@ import com.example.goldameirl.model.Branch
 
 class BranchAdapter:
     ListAdapter<Branch, BranchAdapter.ViewHolder>(BranchDiffCallBack()) {
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
@@ -26,18 +25,26 @@ class BranchAdapter:
     class ViewHolder private constructor(val binding: BranchesListItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Branch) {
-            binding.branch = item
-            binding.phoneText.setOnClickListener {
+            binding.apply {
+                branch = item
+                phoneText.setOnClickListener {
+                    phoneClick(this, item)
+                }
+                executePendingBindings()
+            }
+        }
+
+        private fun phoneClick(binding: BranchesListItemBinding, item: Branch) {
+            binding.apply {
                 val phoneIntent = Intent()
                 phoneIntent.apply {
                     action = Intent.ACTION_DIAL
                     data = Uri.parse("tel:${item.phone}")
                 }
-                if (phoneIntent.resolveActivity(binding.root.context.packageManager) != null){
-                    binding.root.context.startActivity(phoneIntent)
+                if (phoneIntent.resolveActivity(root.context.packageManager) != null){
+                    root.context.startActivity(phoneIntent)
                 }
             }
-            binding.executePendingBindings()
         }
 
         companion object {

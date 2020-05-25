@@ -15,9 +15,7 @@ import com.example.goldameirl.viewmodel.BranchAdapter
 import com.example.goldameirl.viewmodel.BranchesViewModel
 import com.example.goldameirl.viewmodel.BranchesViewModelFactory
 
-
 class BranchesFragment : Fragment(){
-
     private lateinit var viewModel: BranchesViewModel
     private lateinit var adapter: BranchAdapter
     private lateinit var binding: FragmentBranchesBinding
@@ -35,10 +33,11 @@ class BranchesFragment : Fragment(){
         val viewModelFactory = BranchesViewModelFactory(application)
         viewModel = ViewModelProvider(this, viewModelFactory)
             .get(BranchesViewModel::class.java)
-
-        binding.viewModel = viewModel
         adapter = BranchAdapter()
-        binding.branchesList.adapter = adapter
+        binding.apply {
+            viewModel = viewModel
+            branchesList.adapter = adapter
+        }
 
         viewModel.branches.observe(viewLifecycleOwner, Observer { list ->
             list?.let {
@@ -46,31 +45,22 @@ class BranchesFragment : Fragment(){
             }
         })
 
-        binding.branchesList.adapter
-
-        initSortChips()
-
         return binding.root
-    }
-
-    private fun initSortChips() {
-        binding.abcChip.setOnCheckedChangeListener { buttonView, isChecked ->
-            viewModel.onChipChecked(buttonView, isChecked)
-        }
-
-        binding.locationChip.setOnCheckedChangeListener { buttonView, isChecked ->
-            viewModel.onChipChecked(buttonView, isChecked)
-        }
     }
 
     private fun setListVisibility(list: List<Branch>) {
         if (list.isEmpty()) {
-            binding.branchesList.visibility = View.GONE
-            binding.branchesEmpty.visibility = View.VISIBLE
+            binding.apply {
+                binding.branchesList.visibility = View.GONE
+                binding.branchesEmpty.visibility = View.VISIBLE
+            }
         } else {
             adapter.submitList(list)
-            binding.branchesEmpty.visibility = View.GONE
-            binding.branchesList.visibility = View.VISIBLE
+
+            binding.apply {
+                branchesEmpty.visibility = View.GONE
+                branchesList.visibility = View.VISIBLE
+            }
         }
     }
 }

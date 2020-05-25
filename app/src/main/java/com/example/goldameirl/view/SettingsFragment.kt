@@ -7,7 +7,6 @@ import com.example.goldameirl.R
 import com.example.goldameirl.misc.INTERVAL_KEY
 import com.example.goldameirl.misc.RADIUS_KEY
 
-
 class SettingsFragment: PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.fragment_settings, rootKey)

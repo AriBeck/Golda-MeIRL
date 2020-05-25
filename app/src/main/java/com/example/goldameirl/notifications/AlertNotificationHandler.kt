@@ -12,8 +12,8 @@ import com.example.goldameirl.view.MainActivity
 class AlertNotificationHandler(override val application: Context, override val channelID: String,
                                override val groupID: String, override val iconID: Int,
                                override val channelDescription: String,
-                               override val channelName: String) :
-    NotificationHandler {
+                               override val channelName: String
+) : NotificationHandler {
     private lateinit var appIntent: PendingIntent
     private lateinit var shareIntent: PendingIntent
     private var channel: NotificationChannel? = null

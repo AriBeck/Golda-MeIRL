@@ -60,6 +60,7 @@
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:onClick="@{(chip) -> viewModel.onChipChecked(chip)}"
                     android:tag="ABC"
                     android:text="@string/abc_chip"
                     app:checkedIconVisible="true"
@@ -71,6 +72,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:tag="Location"
+                    android:onClick="@{(chip) -> viewModel.onChipChecked(chip)}"
                     android:text="@string/location_chip"
                     app:checkedIconVisible="true"
                     app:chipBackgroundColor="@color/selected_highlight" />

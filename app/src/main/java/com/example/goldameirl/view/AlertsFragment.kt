@@ -34,10 +34,12 @@ class AlertsFragment : Fragment() {
         val viewModelFactory = AlertsViewModelFactory(application)
         viewModel = ViewModelProvider(this, viewModelFactory)
             .get(AlertsViewModel::class.java)
-
-        binding.viewModel = viewModel
         adapter = AlertAdapter()
-        binding.alertList.adapter = adapter
+
+        binding.apply {
+            binding.viewModel = viewModel
+            binding.alertList.adapter = adapter
+        }
 
         viewModel.alerts?.observe(viewLifecycleOwner, Observer { list ->
             list?.let {

@@ -2,7 +2,6 @@ package com.example.goldameirl.misc
 
 import android.annotation.SuppressLint
 import android.telephony.PhoneNumberUtils
-import android.widget.CheckBox
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.example.goldameirl.model.Branch
@@ -26,12 +25,5 @@ fun TextView.formatDateTime(item: Alert?) {
 fun TextView.formatPhone(item: Branch?) {
     item?.let {
         text = PhoneNumberUtils.formatNumber(it.phone)
-    }
-}
-
-@BindingAdapter("isRead")
-fun CheckBox.isRead(item: Alert?) {
-    item?.let {
-        isChecked = item.isRead
     }
 }

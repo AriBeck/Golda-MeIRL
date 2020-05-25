@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.*
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.ActivityMainBinding
@@ -15,9 +17,7 @@ import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 
 class MainActivity : AppCompatActivity(), PermissionsListener {
-
-    var permissionsManager = PermissionsManager(this)
-
+    private var permissionsManager = PermissionsManager(this)
     lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var alertManager: AlertManager
@@ -32,7 +32,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
         binding = DataBindingUtil.setContentView(this,
             R.layout.activity_main)
-        navController = this.findNavController(R.id.nav_host_fragment)
+        navController = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment)!!.findNavController()
         findViewById<BottomNavigationView>(R.id.bottom_nav)
             .setupWithNavController(navController)
     }

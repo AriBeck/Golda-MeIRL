@@ -9,7 +9,6 @@ import retrofit2.HttpException
 
 class RefreshWorker(application: Context, params: WorkerParameters) :
     CoroutineWorker(application, params) {
-
     companion object {
         const val WORK_NAME = "com.example.goldameirl.RefreshWorker"
     }

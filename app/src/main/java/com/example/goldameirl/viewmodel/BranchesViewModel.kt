@@ -8,6 +8,7 @@ import androidx.lifecycle.MediatorLiveData
 import com.example.goldameirl.location.LocationTool
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.model.BranchManager
+import com.google.android.material.chip.Chip
 
 class BranchesViewModel(application: Application):
     AndroidViewModel(application) {
@@ -23,13 +24,15 @@ class BranchesViewModel(application: Application):
         }
     }
 
-    fun onChipChecked(chip: View, isChecked: Boolean){
-        if ((chip.tag as String == "ABC") && isChecked) {
-           branches.value = branches.value?.sortByABC()
-        }
+    fun onChipChecked(chip: View){
+        if (chip is Chip) {
+            if ((chip.tag as String == "ABC") && chip.isChecked) {
+                branches.value = branches.value?.sortByABC()
+            }
 
-        if ((chip.tag as String == "Location") && isChecked) {
-            branches.value = branches.value?.sortByLocation()
+            if ((chip.tag as String == "Location") && chip.isChecked) {
+                branches.value = branches.value?.sortByLocation()
+            }
         }
     }
 

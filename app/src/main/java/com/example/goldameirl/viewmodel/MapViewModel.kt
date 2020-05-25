@@ -36,7 +36,7 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 class MapViewModel(
      application: Application
 ) : AndroidViewModel(application), OnMapReadyCallback, LocationChangeSuccessWorker {
-    val app = getApplication<Application>()
+    private val app = getApplication<Application>()
     private val branchManager = BranchManager.getInstance(app)
     private lateinit var mapboxMap: MapboxMap
 
@@ -49,9 +49,7 @@ class MapViewModel(
         get() = _toAlerts
 
     private var currentLocation = LocationTool.getInstance(application)?.currentLocation!!
-
     private var branches: List<Branch>? = null
-
     private lateinit var anitaJsonObserver: Observer<String>
     private var goldaBranchesObserver: Observer<List<Branch>>
 

@@ -22,7 +22,6 @@ import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
 class AppDatabaseTest {
-
     private lateinit var alertDao: AlertDAO
     private lateinit var db: DB
 
@@ -46,9 +45,9 @@ class AppDatabaseTest {
 
     @Test
     @Throws(Exception::class)
-    fun insertAndGetNotification() {
-        val notification = Alert(title = "Title", content = "Content")
-        alertDao.insert(notification)
+    fun insertAndGetAlert() {
+        val alert = Alert(title = "Title", content = "Content")
+        alertDao.insert(alert)
         val lastNotification = alertDao.getLastAlert()
         assertEquals(lastNotification?.title, "Title")
     }

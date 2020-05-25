@@ -3,19 +3,15 @@ package com.example.goldameirl.viewmodel
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.AlertListItemBinding
-import com.example.goldameirl.db.DB
 import com.example.goldameirl.model.Alert
 import com.example.goldameirl.model.AlertManager
-import kotlinx.coroutines.*
 
 class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBack()) {
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
@@ -28,116 +24,47 @@ class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBac
 
     class ViewHolder(val binding: AlertListItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        private val updateJob = Job()
 
         fun bind(item: Alert) {
-            binding.alert = item
-            binding.shareButton.setOnClickListener {
+            binding.apply {
+                alert = item
+
+                shareButton.setOnClickListener {
+                    shareClick(this, item)
+                }
+
+                deleteButton.setOnClickListener {
+                    AlertManager.getInstance(root.context)?.delete(item)
+                }
+
+                checkBox.apply {
+                    isChecked = item.isRead
+
+                    setOnClickListener {
+                        item.isRead = isChecked
+                        AlertManager.getInstance(context)?.update(item)
+                    }
+                }
+
+                executePendingBindings()
+            }
+        }
+
+        private fun shareClick(binding: AlertListItemBinding, item: Alert) {
+            binding.apply {
                 val shareIntent = Intent()
+
                 shareIntent.apply {
                     action = Intent.ACTION_SEND
                     putExtra(
                         Intent.EXTRA_TEXT,
-                        binding.root.context.getString(R.string.share_message) +
+                        root.context.getString(R.string.share_message) +
                                 "${item.content} at ${item.title}!"
                     )
                     type = "text/plain"
                 }
-                binding.root.context.startActivity(shareIntent)
-            }
 
-            binding.deleteButton.setOnClickListener {
-                AlertManager.getInstance(binding.root.context)?.delete(item)
-            }
-
-            onChecked(item)
-            binding.executePendingBindings()
-        }
-
-        private fun onChecked(item: Alert) {
-            binding.checkBox.apply {
-                setOnClickListener {
-                    val isChecked = binding.checkBox.isChecked
-                    item.isRead = isChecked
-                    CoroutineScope(Dispatchers.Main + updateJob).launch {
-                        withContext(Dispatchers.IO) {
-                            DB.getInstance(binding.root.context)?.alertDAO?.update(item)
-                        }
-                    }
-                }
-                setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        setAsRead()
-                    } else {
-                        setAsNotRead()
-                    }
-                }
-            }
-        }
-
-        private fun setAsNotRead() {
-            binding.apply {
-                notificationCard
-                    .setCardBackgroundColor(
-                        ContextCompat
-                            .getColor(binding.root.context, R.color.secondaryColor)
-                    )
-                titleText
-                    .setTextColor(
-                        ContextCompat
-                            .getColor(binding.root.context, R.color.secondaryTextColor)
-                    )
-                contentText
-                    .setTextColor(
-                        ContextCompat
-                            .getColor(binding.root.context, R.color.secondaryTextColor)
-                    )
-                timeStamp
-                    .setTextColor(
-                        ContextCompat
-                            .getColor(binding.root.context, R.color.secondaryTextColor)
-                    )
-                shareButton.setColorFilter(
-                    ContextCompat
-                        .getColor(binding.root.context, R.color.secondaryTextColor)
-                )
-                deleteButton.setColorFilter(
-                    ContextCompat
-                        .getColor(binding.root.context, R.color.secondaryTextColor)
-                )
-            }
-        }
-
-        private fun setAsRead() {
-            binding.apply {
-                notificationCard
-                    .setCardBackgroundColor(
-                        ContextCompat
-                            .getColor(binding.root.context, R.color.primaryColor)
-                    )
-                titleText
-                    .setTextColor(
-                        ContextCompat
-                            .getColor(binding.root.context, R.color.primaryTextColor)
-                    )
-                contentText
-                    .setTextColor(
-                        ContextCompat
-                            .getColor(binding.root.context, R.color.primaryTextColor)
-                    )
-                timeStamp
-                    .setTextColor(
-                        ContextCompat
-                            .getColor(binding.root.context, R.color.primaryTextColor)
-                    )
-                shareButton.setColorFilter(
-                    ContextCompat
-                        .getColor(binding.root.context, R.color.primaryTextColor)
-                )
-                deleteButton.setColorFilter(
-                    ContextCompat
-                        .getColor(binding.root.context, R.color.primaryTextColor)
-                )
+                root.context.startActivity(shareIntent)
             }
         }
 

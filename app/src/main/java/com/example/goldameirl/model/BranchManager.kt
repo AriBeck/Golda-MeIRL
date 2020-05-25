@@ -5,10 +5,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-
 class BranchManager private constructor (application: Context) {
     private val repository = BranchRepository(application)
-
     val branches = repository.branches
     val anitaJson = repository.anitaJson
 

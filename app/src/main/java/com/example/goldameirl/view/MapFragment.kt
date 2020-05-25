@@ -23,23 +23,19 @@ import com.example.goldameirl.viewmodel.MapViewModelFactory
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.maps.MapView
 
-
 class MapFragment : Fragment(){
     private lateinit var application: Application
     private lateinit var mainActivity: MainActivity
     lateinit var viewModel: MapViewModel
     lateinit var binding: FragmentMapBinding
-
     private lateinit var preferences: SharedPreferences
-
-    private lateinit var mapView: MapView
+    private var mapView: MapView? = null
     private lateinit var branchToggle: Switch
     private lateinit var anitaToggle: Switch
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View? {
-
         mainActivity = requireActivity() as MainActivity
         application = requireActivity().application
         Mapbox.getInstance(application, TOKEN)
@@ -56,8 +52,8 @@ class MapFragment : Fragment(){
 
         binding.viewModel = viewModel
         mapView = binding.mapView
-        mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync(viewModel)
+        mapView?.onCreate(savedInstanceState)
+        mapView?.getMapAsync(viewModel)
 
         observeViewModel()
         initButtons()
@@ -136,36 +132,36 @@ class MapFragment : Fragment(){
 
     override fun onResume() {
         super.onResume()
-        mapView.onResume()
+        mapView?.onResume()
     }
 
     override fun onStart() {
         super.onStart()
-        mapView.onStart()
+        mapView?.onStart()
     }
 
     override fun onStop() {
         super.onStop()
-        mapView.onStop()
+        mapView?.onStop()
     }
 
     override fun onPause() {
         super.onPause()
-        mapView.onPause()
+        mapView?.onPause()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        mapView.onLowMemory()
+        mapView?.onLowMemory()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mapView.onDestroy()
+        mapView?.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        mapView.onSaveInstanceState(outState)
+        mapView?.onSaveInstanceState(outState)
     }
 }

@@ -11,7 +11,6 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
-import retrofit2.http.Url
 
 private val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
@@ -37,8 +36,6 @@ interface GeoJsonAPIService {
     @GET("{source}.json")
     fun getGeoJson(@Path("source") source: String): Call<String>
 }
-
-
 
 object BranchAPI {
     val retrofitService: BranchAPIService by lazy {

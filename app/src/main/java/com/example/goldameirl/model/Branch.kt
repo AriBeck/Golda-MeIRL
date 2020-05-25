@@ -6,8 +6,7 @@ import com.squareup.moshi.Json
 
 @Entity(tableName = "Branches")
 data class Branch(
-    @PrimaryKey
-    val id: Double,
+    @PrimaryKey val id: Double,
     val name: String,
     val address: String,
     val latitude: Double,
