@@ -22,8 +22,8 @@ class BranchRepository(application: Context) {
     }
 
     fun getGeoJson(source: String) {
-        val jsonUrl = "$BASE_URL$source.json"
-        BranchAPI.geoJsonRetrofitService.getGeoJson(jsonUrl).enqueue(
+        //val jsonUrl = "$BASE_URL$source.json"
+        BranchAPI.geoJsonRetrofitService.getGeoJson(source).enqueue(
             object: Callback<String> {
                 override fun onFailure(call: Call<String>, t: Throwable) {
                 }

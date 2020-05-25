@@ -10,6 +10,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Url
 
 private val moshi = Moshi.Builder()
@@ -33,8 +34,8 @@ interface BranchAPIService {
 }
 
 interface GeoJsonAPIService {
-    @GET
-    fun getGeoJson(@Url url: String): Call<String>
+    @GET("{source}.json")
+    fun getGeoJson(@Path("source") source: String): Call<String>
 }
 
 
