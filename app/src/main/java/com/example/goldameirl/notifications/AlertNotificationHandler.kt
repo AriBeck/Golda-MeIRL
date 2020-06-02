@@ -7,6 +7,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.goldameirl.R
+import com.example.goldameirl.misc.PLAIN_TEXT
 import com.example.goldameirl.view.MainActivity
 
 class AlertNotificationHandler(override val application: Context, override val channelID: String,
@@ -45,9 +46,9 @@ class AlertNotificationHandler(override val application: Context, override val c
             action = Intent.ACTION_SEND
             putExtra(
                 Intent.EXTRA_TEXT, application.getString(R.string.share_message) +
-                        "$content at $title!"
+                        content + application.getString(R.string.at) + title
             )
-            type = "text/plain"
+            type = PLAIN_TEXT
         }
         shareIntent = PendingIntent.getActivity(application, 0, intent, 0)
     }

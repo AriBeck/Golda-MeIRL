@@ -2,12 +2,12 @@ package com.example.goldameirl.model
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.location.Location
 import android.preference.PreferenceManager
 import androidx.lifecycle.LiveData
 import com.example.goldameirl.R
 import com.example.goldameirl.db.DB
-import com.example.goldameirl.location.LocationChangeSuccessWorker
 import com.example.goldameirl.location.LocationTool
 import com.example.goldameirl.misc.*
 import com.example.goldameirl.notifications.AlertNotificationHandler
@@ -16,13 +16,14 @@ import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
 class AlertManager private constructor (val application: Context):
-    LocationChangeSuccessWorker, SharedPreferences.OnSharedPreferenceChangeListener {
+    OnSharedPreferenceChangeListener {
     var interval: Long? = DEFAULT_INTERVAL
     var radius: Int? = DEFAULT_RADIUS
     private var alertTime: Long? = DEFAULT_ALERT_TIME
 
     val branches: LiveData<List<Branch>>? = BranchManager.getInstance(application)?.branches
-    val alerts = DB.getInstance(application)?.alertDAO?.getAll()
+    private val db = DB.getInstance(application)?.alertDAO!!
+    val alerts = db.getAll()
 
     private val notificationHandler: NotificationHandler =
         AlertNotificationHandler(application,
@@ -33,11 +34,31 @@ class AlertManager private constructor (val application: Context):
 
     var preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
 
+    private val onLocationChangeSuccess = { newLocation: Location ->
+        sendAlertWhenNearBranchAndExceededInterval(newLocation)
+    }
+
     init {
-        interval = preferences.getInt(INTERVAL_KEY, 1).times(5).toLong()
-        radius = preferences.getInt(RADIUS_KEY, 5).times(100)
+        getPreferences()
         preferences.registerOnSharedPreferenceChangeListener(this)
-        LocationTool.getInstance(application)?.subscribe(this)
+        LocationTool.getInstance(application)?.subscribe(onLocationChangeSuccess)
+    }
+
+    companion object {
+        @Volatile
+        private var INSTANCE: AlertManager? = null
+
+        fun getInstance(application: Context): AlertManager? {
+            synchronized(this) {
+                var instance = INSTANCE
+
+                if (instance == null) {
+                    instance = AlertManager(application)
+                    INSTANCE = instance
+                }
+                return instance
+            }
+        }
     }
 
     private fun sendAlertWhenNearBranchAndExceededInterval(location: Location?) {
@@ -62,8 +83,10 @@ class AlertManager private constructor (val application: Context):
 
     private fun hasTimeSinceLastAlertExceededInterval(branch: Branch): Boolean {
         alertTime = preferences.getLong(branch.name, DEFAULT_ALERT_TIME)
-        return (System.currentTimeMillis() - alertTime!!) >= TimeUnit.MILLISECONDS
+        val timeSinceLastAlert = System.currentTimeMillis() - alertTime!!
+        val intervalMillis = TimeUnit.MILLISECONDS
             .convert(interval ?: DEFAULT_INTERVAL, TimeUnit.MINUTES)
+        return timeSinceLastAlert >= intervalMillis
     }
 
     private fun sendAlert(title: String, content: String) {
@@ -83,65 +106,35 @@ class AlertManager private constructor (val application: Context):
 
     private suspend fun insertToDB(alert: Alert): Long? {
         return withContext(Dispatchers.IO) {
-            DB.getInstance(application)!!.alertDAO.insert(alert)
+            db.insert(alert)
         }
     }
 
     fun delete(alert: Alert) {
         CoroutineScope(Dispatchers.Default).launch {
-            cancelNotification(alert)
-            deleteFromDB(alert)
-        }
-    }
+            notificationHandler.cancel(alert.id.toInt())
 
-    private suspend fun deleteFromDB(alert: Alert) {
-        withContext(Dispatchers.IO){
-            DB.getInstance(application)!!.alertDAO.delete(alert)
+            withContext(Dispatchers.IO){
+                db.delete(alert)
+            }
         }
     }
 
     fun update(alert: Alert) {
         CoroutineScope(Dispatchers.Default).launch {
             withContext(Dispatchers.IO) {
-                DB.getInstance(application)?.alertDAO?.update(alert)
+                db.update(alert)
             }
         }
-    }
-
-    private fun cancelNotification(alert: Alert) {
-        notificationHandler.cancel(alert.id.toInt())
-    }
-
-    override fun doWork(newLocation: Location) {
-        sendAlertWhenNearBranchAndExceededInterval(newLocation)
-    }
-
-    companion object {
-        @Volatile
-        private var INSTANCE: AlertManager? = null
-
-        fun getInstance(application: Context): AlertManager? {
-            synchronized(this) {
-                var instance = INSTANCE
-
-                if (instance == null) {
-                    instance = AlertManager(application)
-                    INSTANCE = instance
-                }
-                return instance
-            }
-        }
-    }
-
-    private fun Branch.location(): Location {
-        val branchLocation = Location("branchLocation")
-        branchLocation.longitude = longitude
-        branchLocation.latitude = latitude
-        return branchLocation
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        interval = preferences.getInt(INTERVAL_KEY, 1).times(5).toLong()
-        radius = preferences.getInt(RADIUS_KEY, 5).times(100)
+        getPreferences()
+    }
+
+    private fun getPreferences() {
+        interval = preferences.getInt(INTERVAL_KEY, DEFAULT_INTERVAL_PREFERENCE).toLong().times(
+            INTERVAL_MULTIPLIER)
+        radius = preferences.getInt(RADIUS_KEY, DEFAULT_RADIUS_PREFERENCE).times(RADIUS_MULTIPLIER)
     }
 }

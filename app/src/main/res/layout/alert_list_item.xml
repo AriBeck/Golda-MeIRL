@@ -75,7 +75,7 @@
                 android:gravity="center"
                 android:textColor="@{alert.isRead ? @color/primaryTextColor : @color/secondaryTextColor}"
                 android:textSize="12sp"
-                app:dateTime="@{alert}"
+                app:dateTime="@{alert.createdAt}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/deleteButton"
                 tools:text="20-04-2020\n12:00" />

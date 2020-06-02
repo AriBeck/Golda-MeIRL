@@ -4,13 +4,15 @@ import android.content.Context
 import android.location.Location
 import android.os.Looper
 import com.example.goldameirl.misc.DEFAULT_RADIUS
+import com.example.goldameirl.misc.LOCATION_ENGINE_INTERVAL
+import com.example.goldameirl.misc.MAX_WAIT_TIME
 import com.mapbox.android.core.location.*
 import java.lang.Exception
 
 class LocationTool private constructor(
     val application: Context
 ) {
-    private val locationChangeSuccessWorkers = mutableListOf<LocationChangeSuccessWorker>()
+    private val locationChangeSuccessWorkList = mutableListOf<(Location) -> Unit>()
     private lateinit var locationEngine: LocationEngine
     private val locationChangeCallback = LocationChangeListeningCallback()
     var currentLocation = Location("currentLocation")
@@ -19,23 +21,7 @@ class LocationTool private constructor(
         initLocationEngine()
     }
 
-    private fun initLocationEngine() {
-        locationEngine = LocationEngineProvider.getBestLocationEngine(application)
-        val request = LocationEngineRequest
-            .Builder(1000)
-            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
-            .setMaxWaitTime(5000)
-            .build()
-        locationEngine.requestLocationUpdates(request, locationChangeCallback, Looper.myLooper())
-        locationEngine.getLastLocation(locationChangeCallback)
-    }
-
     companion object {
-        fun isLocationInRadius(location: Location, center: Location, radius: Int?
-        ): Boolean {
-            return location.distanceTo(center) <= radius ?: DEFAULT_RADIUS
-        }
-
         @Volatile
         private var INSTANCE: LocationTool? = null
 
@@ -52,14 +38,31 @@ class LocationTool private constructor(
                 return instance
             }
         }
+
+        fun isLocationInRadius(location: Location, center: Location, radius: Int?
+        ): Boolean {
+            return location.distanceTo(center) <= radius ?: DEFAULT_RADIUS
+        }
     }
 
-    fun subscribe(worker: LocationChangeSuccessWorker){
-        locationChangeSuccessWorkers.add(worker)
+    private fun initLocationEngine() {
+        val request = LocationEngineRequest
+            .Builder(LOCATION_ENGINE_INTERVAL)
+            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+            .setMaxWaitTime(MAX_WAIT_TIME)
+            .build()
+
+        locationEngine = LocationEngineProvider.getBestLocationEngine(application)
+        locationEngine.requestLocationUpdates(request, locationChangeCallback, Looper.myLooper())
+        locationEngine.getLastLocation(locationChangeCallback)
     }
 
-    fun unsubscribe(worker: LocationChangeSuccessWorker){
-        locationChangeSuccessWorkers.remove(worker)
+    fun subscribe(work: (Location) -> Unit){
+        locationChangeSuccessWorkList.add(work)
+    }
+
+    fun unsubscribe(work: (Location) -> Unit){
+        locationChangeSuccessWorkList.remove(work)
     }
 
     inner class LocationChangeListeningCallback:
@@ -68,13 +71,11 @@ class LocationTool private constructor(
         override fun onSuccess(result: LocationEngineResult?) {
             val newLocation = result?.lastLocation ?: return
             currentLocation = newLocation
-            locationChangeSuccessWorkers.forEach {
-                it.doWork(newLocation)
+            locationChangeSuccessWorkList.forEach {
+                it(newLocation)
             }
         }
 
         override fun onFailure(exception: Exception) {}
     }
-
-
 }

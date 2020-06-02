@@ -9,7 +9,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.goldameirl.R
-import com.example.goldameirl.location.LocationChangeSuccessWorker
 import com.example.goldameirl.location.LocationTool
 import com.example.goldameirl.misc.ANITA_ICON_ID
 import com.example.goldameirl.misc.ANITA_LAYER_ID
@@ -35,7 +34,7 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 
 class MapViewModel(
      application: Application
-) : AndroidViewModel(application), OnMapReadyCallback, LocationChangeSuccessWorker {
+) : AndroidViewModel(application), OnMapReadyCallback{
     private val app = getApplication<Application>()
     private val branchManager = BranchManager.getInstance(app)
     private lateinit var mapboxMap: MapboxMap
@@ -139,7 +138,7 @@ class MapViewModel(
                 renderMode = RenderMode.COMPASS
             }
 
-            LocationTool.getInstance(app)?.subscribe(this)
+            LocationTool.getInstance(app)?.subscribe(onLocationChangeSuccess)
             centerCamera()
         }
     }
@@ -154,7 +153,7 @@ class MapViewModel(
         )
     }
 
-    override fun doWork(newLocation: Location) {
+    private val onLocationChangeSuccess = { newLocation: Location ->
         if (newLocation.distanceTo(currentLocation) >= 100) {
             mapboxMap.locationComponent.forceLocationUpdate(newLocation)
             centerCamera()
@@ -172,7 +171,7 @@ class MapViewModel(
     }
 
     override fun onCleared() {
-        LocationTool.getInstance(app)?.unsubscribe(this)
+        LocationTool.getInstance(app)?.unsubscribe(onLocationChangeSuccess)
         branchManager?.apply {
             anitaJson.removeObserver(anitaJsonObserver)
             branches.removeObserver(goldaBranchesObserver)

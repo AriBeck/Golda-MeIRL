@@ -35,7 +35,7 @@ class BranchesFragment : Fragment(){
             .get(BranchesViewModel::class.java)
         adapter = BranchAdapter()
         binding.apply {
-            viewModel = viewModel
+            viewModel = this@BranchesFragment.viewModel
             branchesList.adapter = adapter
         }
 

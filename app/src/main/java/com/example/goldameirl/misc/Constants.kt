@@ -19,5 +19,15 @@ const val DEFAULT_RADIUS = 500
 const val DEFAULT_INTERVAL = 5L
 const val DEFAULT_ALERT_TIME = 0L
 
+const val DEFAULT_INTERVAL_PREFERENCE = 1
+const val DEFAULT_RADIUS_PREFERENCE = 5
+const val INTERVAL_MULTIPLIER = 5L
+const val RADIUS_MULTIPLIER = 100
+
 const val INTERVAL_KEY = "time"
 const val RADIUS_KEY = "radius"
+
+const val PLAIN_TEXT = "text/plain"
+
+const val LOCATION_ENGINE_INTERVAL = 1000L
+const val MAX_WAIT_TIME = 5000L
