@@ -16,10 +16,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentMapBinding
-import com.example.goldameirl.misc.ANITA_LAYER_ID
-import com.example.goldameirl.misc.TOKEN
+import com.example.goldameirl.misc.*
 import com.example.goldameirl.viewmodel.MapViewModel
-import com.example.goldameirl.viewmodel.MapViewModelFactory
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.maps.MapView
 
@@ -32,6 +30,7 @@ class MapFragment : Fragment(){
     private var mapView: MapView? = null
     private lateinit var branchToggle: Switch
     private lateinit var anitaToggle: Switch
+    private var toggleList: MutableList<Switch> = ArrayList()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,11 +43,8 @@ class MapFragment : Fragment(){
             inflater, R.layout.fragment_map, container, false
         )
 
-        viewModel = ViewModelProvider(
-            this, MapViewModelFactory(
-                application
-            )
-        ).get(MapViewModel::class.java)
+        viewModel = ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory
+            .getInstance(application)).get(MapViewModel::class.java)
 
         binding.viewModel = viewModel
         mapView = binding.mapView
@@ -65,6 +61,7 @@ class MapFragment : Fragment(){
     private fun observeViewModel() {
         viewModel.mapReady.observe(viewLifecycleOwner, Observer {
             if (it) {
+                viewModel.afterMapReady()
                 setupAnnotations()
                 setLayerToggleListeners()
             }
@@ -76,7 +73,7 @@ class MapFragment : Fragment(){
                     MapFragmentDirections
                         .mapFragmentToAlertsFragment()
                 )
-                viewModel.onAlertsClicked()
+                viewModel.navigatedToAlerts()
             }
         })
     }
@@ -88,45 +85,42 @@ class MapFragment : Fragment(){
     }
 
     private fun initToggles() {
-        branchToggle = mainActivity.binding.navView.menu
-            .findItem(R.id.branch_layer_item).actionView.findViewById(R.id.item_switch)
+        if (toggleList.isEmpty()) {
+            branchToggle = mainActivity.binding.navView.menu
+                .findItem(R.id.branch_layer_item).actionView.findViewById(R.id.item_switch)
 
-        anitaToggle = mainActivity.binding.navView.menu
-            .findItem(R.id.anita_layer_item).actionView.findViewById(R.id.item_switch)
+            branchToggle.tag = BRANCH_LAYER_ID
+
+            anitaToggle = mainActivity.binding.navView.menu
+                .findItem(R.id.anita_layer_item).actionView.findViewById(R.id.item_switch)
+
+            anitaToggle.tag = ANITA_LAYER_ID
+
+            toggleList.add(branchToggle)
+            toggleList.add(anitaToggle)
+        }
 
         preferences = PreferenceManager.getDefaultSharedPreferences(context)
-        branchToggle.isChecked = preferences.getBoolean("branchToggle", true)
-        anitaToggle.isChecked = preferences.getBoolean("anitaToggle", true)
+
+        toggleList.forEach {
+            it.isChecked = preferences.getBoolean(it.tag as String, true)
+        }
     }
 
     private fun setLayerToggleListeners() {
-        branchToggle.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                viewModel.addGoldaMarkers()
-            } else {
-                viewModel.removeGoldaMarkers()
+        toggleList.forEach {
+            it.setOnCheckedChangeListener { toggle, isChecked ->
+                viewModel.onToggleCheckedChanged(toggle, isChecked)
+                preferences.edit().putBoolean(it.tag as String, isChecked).apply()
             }
-
-            preferences.edit().putBoolean("branchToggle", isChecked).apply()
-        }
-
-        anitaToggle.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                viewModel.addLayer(ANITA_LAYER_ID)
-            } else {
-                viewModel.removeLayer(ANITA_LAYER_ID)
-            }
-
-            preferences.edit().putBoolean("anitaToggle", isChecked).apply()
         }
     }
 
     private fun setupAnnotations() {
-        if (branchToggle.isChecked) {
-            viewModel.addGoldaMarkers()
-        }
-        if (anitaToggle.isChecked) {
-            viewModel.addLayer(ANITA_LAYER_ID)
+        toggleList.forEach {
+            if (it.isChecked) {
+                viewModel.addLayer(it.tag as String)
+            }
         }
     }
 

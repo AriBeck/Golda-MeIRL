@@ -12,8 +12,8 @@ import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentAlertsBinding
 import com.example.goldameirl.model.Alert
 import com.example.goldameirl.viewmodel.AlertAdapter
+import com.example.goldameirl.viewmodel.AlertListener
 import com.example.goldameirl.viewmodel.AlertsViewModel
-import com.example.goldameirl.viewmodel.AlertsViewModelFactory
 
 class AlertsFragment : Fragment() {
     private lateinit var viewModel: AlertsViewModel
@@ -31,10 +31,12 @@ class AlertsFragment : Fragment() {
             R.layout.fragment_alerts, container, false
         )
 
-        val viewModelFactory = AlertsViewModelFactory(application)
-        viewModel = ViewModelProvider(this, viewModelFactory)
+        viewModel = ViewModelProvider(
+            this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
             .get(AlertsViewModel::class.java)
-        adapter = AlertAdapter()
+
+        adapter = AlertAdapter(AlertListener(viewModel.shareClick,
+            viewModel.deleteClick, viewModel.checkboxClick))
 
         binding.apply {
             binding.viewModel = viewModel

@@ -1,37 +1,32 @@
 package com.example.goldameirl.viewmodel
 
 import android.app.Application
-import android.location.Location
+import android.content.Intent
+import android.net.Uri
 import android.view.View
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.goldameirl.location.LocationTool
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.model.BranchManager
+import com.example.goldameirl.model.location
 import com.google.android.material.chip.Chip
 
 class BranchesViewModel(application: Application):
     AndroidViewModel(application) {
-    var dbBranches = BranchManager.getInstance(application)?.branches
-    val branches = MediatorLiveData<List<Branch>>()
+    val app = getApplication<Application>()
+    var branches = MutableLiveData<List<Branch>>()
     private var currentLocation = LocationTool.getInstance(application)?.currentLocation
 
     init {
-        branches.addSource(dbBranches!!) { result ->
-            result?.let {
-                branches.value = it
-            }
-        }
+        branches.value = BranchManager.getInstance(app)!!.branches.value
     }
 
-    fun onChipChecked(chip: View){
-        if (chip is Chip) {
-            if ((chip.tag as String == "ABC") && chip.isChecked) {
-                branches.value = branches.value?.sortByABC()
-            }
-
-            if ((chip.tag as String == "Location") && chip.isChecked) {
-                branches.value = branches.value?.sortByLocation()
+    fun onChipChecked(chip: View) {
+        if (chip is Chip && chip.isChecked) {
+            when (chip.tag as String) {
+                "ABC" -> branches.value = branches.value?.sortByABC()
+                "Location" -> branches.value = branches.value?.sortByLocation()
             }
         }
     }
@@ -44,10 +39,14 @@ class BranchesViewModel(application: Application):
             currentLocation?.distanceTo(it.location())
         }
 
-    private fun Branch.location(): Location {
-        val branchLocation = Location("branchLocation")
-        branchLocation.longitude = longitude
-        branchLocation.latitude = latitude
-        return branchLocation
+    val phoneClick: (Branch) -> Unit =  { item ->
+            val phoneIntent = Intent()
+            phoneIntent.apply {
+                action = Intent.ACTION_DIAL
+                data = Uri.parse("tel:${item.phone}")
+            }
+            if (phoneIntent.resolveActivity(app.packageManager) != null){
+                app.startActivity(phoneIntent)
+            }
     }
 }

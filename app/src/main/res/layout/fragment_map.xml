@@ -52,7 +52,7 @@
             android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true"
-            android:onClick="@{() -> viewModel.onAlertsClick()}"
+            android:onClick="@{() -> viewModel.navigateToAlerts()}"
             android:src="@drawable/icon_notification_button_foreground"
             app:backgroundTint="@color/secondaryColor"
             app:layout_constraintBottom_toTopOf="@+id/location_button"

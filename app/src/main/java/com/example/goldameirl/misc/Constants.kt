@@ -12,6 +12,8 @@ const val ANITA_LAYER_ID = "anita-layer"
 const val ANITA_SOURCE_ID = "anita-source"
 const val ANITA_ICON_ID = "anita-icon"
 
+const val BRANCH_LAYER_ID = "branch-layer"
+
 const val BASE_URL =
     "https://wow-final.firebaseio.com/"
 

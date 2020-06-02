@@ -4,18 +4,16 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.graphics.BitmapFactory
 import android.location.Location
+import android.widget.CompoundButton
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.example.goldameirl.R
 import com.example.goldameirl.location.LocationTool
-import com.example.goldameirl.misc.ANITA_ICON_ID
-import com.example.goldameirl.misc.ANITA_LAYER_ID
-import com.example.goldameirl.misc.ANITA_SOURCE_ID
+import com.example.goldameirl.misc.*
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.model.BranchManager
-import com.example.goldameirl.misc.DEFAULT_ZOOM
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
@@ -74,22 +72,29 @@ class MapViewModel(
 
             branchManager?.anitaJson?.observeForever(anitaJsonObserver)
             _mapReady.value = true
-            _mapReady.value = false
-        }
-
-    }
-
-    fun removeLayer(layerID: String) {
-        mapboxMap.getStyle {
-            it.removeLayer(layerID)
         }
     }
 
-    fun removeGoldaMarkers() {
+    fun afterMapReady() {
+        _mapReady.value = false
+    }
+
+    private fun removeLayer(layerID: String) {
+        if (layerID == BRANCH_LAYER_ID) {
+            removeGoldaMarkers()
+        }
+        else {
+            mapboxMap.getStyle {
+                it.removeLayer(layerID)
+            }
+        }
+    }
+
+    private fun removeGoldaMarkers() {
         mapboxMap.clear()
     }
 
-    fun addGoldaMarkers() {
+    private fun addGoldaMarkers() {
         branches?.forEach { branch ->
             mapboxMap.addMarker(
                 (MarkerOptions()
@@ -106,16 +111,31 @@ class MapViewModel(
     }
 
     fun addLayer(layerID: String) {
-        mapboxMap.getStyle {
-            var symbolLayer: SymbolLayer? = null
+        if (layerID == BRANCH_LAYER_ID) {
+            addGoldaMarkers()
+        } else {
+            mapboxMap.getStyle {
+                var symbolLayer: SymbolLayer? = null
 
-            when (layerID) {
-                ANITA_LAYER_ID -> {
-            symbolLayer = SymbolLayer(layerID, ANITA_SOURCE_ID)
-            symbolLayer.setProperties(PropertyFactory.iconImage(ANITA_ICON_ID))
+                when (layerID) {
+                    ANITA_LAYER_ID -> {
+                        symbolLayer = SymbolLayer(layerID, ANITA_SOURCE_ID)
+                        symbolLayer.setProperties(PropertyFactory.iconImage(ANITA_ICON_ID))
+                    }
                 }
-            }
                 it.addLayer(symbolLayer!!)
+            }
+        }
+    }
+
+    fun onToggleCheckedChanged(
+        toggle: CompoundButton,
+        isChecked: Boolean
+    ) {
+        if (isChecked) {
+            addLayer(toggle.tag as String)
+        } else {
+            removeLayer(toggle.tag as String)
         }
     }
 
@@ -162,11 +182,11 @@ class MapViewModel(
         currentLocation = newLocation
     }
 
-    fun onAlertsClick() {
+    fun navigateToAlerts() {
         _toAlerts.value = true
     }
 
-    fun onAlertsClicked() {
+    fun navigatedToAlerts() {
         _toAlerts.value = false
     }
 

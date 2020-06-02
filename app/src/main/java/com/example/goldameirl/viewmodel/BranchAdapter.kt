@@ -1,7 +1,5 @@
 package com.example.goldameirl.viewmodel
 
-import android.content.Intent
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -10,10 +8,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.goldameirl.databinding.BranchesListItemBinding
 import com.example.goldameirl.model.Branch
 
-class BranchAdapter:
+class BranchAdapter(val clickListener: BranchListener):
     ListAdapter<Branch, BranchAdapter.ViewHolder>(BranchDiffCallBack()) {
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), clickListener)
     }
 
     override fun onCreateViewHolder(
@@ -24,26 +22,14 @@ class BranchAdapter:
 
     class ViewHolder private constructor(val binding: BranchesListItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Branch) {
+        fun bind(
+            item: Branch,
+            clickListener: BranchListener
+        ) {
             binding.apply {
                 branch = item
-                phoneText.setOnClickListener {
-                    phoneClick(this, item)
-                }
+                setClickListener(clickListener)
                 executePendingBindings()
-            }
-        }
-
-        private fun phoneClick(binding: BranchesListItemBinding, item: Branch) {
-            binding.apply {
-                val phoneIntent = Intent()
-                phoneIntent.apply {
-                    action = Intent.ACTION_DIAL
-                    data = Uri.parse("tel:${item.phone}")
-                }
-                if (phoneIntent.resolveActivity(root.context.packageManager) != null){
-                    root.context.startActivity(phoneIntent)
-                }
             }
         }
 
@@ -65,4 +51,8 @@ class BranchDiffCallBack : DiffUtil.ItemCallback<Branch>() {
     override fun areContentsTheSame(oldItem: Branch, newItem: Branch): Boolean {
         return oldItem.id == newItem.id
     }
+}
+
+class BranchListener(val phoneClickListener: (Branch) -> Unit) {
+    fun onPhoneClick(item: Branch) = phoneClickListener(item)
 }

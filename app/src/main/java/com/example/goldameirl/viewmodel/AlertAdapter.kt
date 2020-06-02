@@ -1,19 +1,19 @@
 package com.example.goldameirl.viewmodel
 
-import android.content.Intent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.goldameirl.R
 import com.example.goldameirl.databinding.AlertListItemBinding
 import com.example.goldameirl.model.Alert
-import com.example.goldameirl.model.AlertManager
 
-class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBack()) {
+class AlertAdapter(private val clickListener: AlertListener):
+    ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBack()) {
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), clickListener)
     }
 
     override fun onCreateViewHolder(
@@ -25,46 +25,19 @@ class AlertAdapter: ListAdapter<Alert, AlertAdapter.ViewHolder>(AlertDiffCallBac
     class ViewHolder(val binding: AlertListItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: Alert) {
+        fun bind(
+            item: Alert,
+            clickListener: AlertListener
+        ) {
             binding.apply {
                 alert = item
-
-                shareButton.setOnClickListener {
-                    shareClick(this, item)
-                }
-
-                deleteButton.setOnClickListener {
-                    AlertManager.getInstance(root.context)?.delete(item)
-                }
+                setClickListener(clickListener)
 
                 checkBox.apply {
                     isChecked = item.isRead
-
-                    setOnClickListener {
-                        item.isRead = isChecked
-                        AlertManager.getInstance(context)?.update(item)
-                    }
                 }
 
                 executePendingBindings()
-            }
-        }
-
-        private fun shareClick(binding: AlertListItemBinding, item: Alert) {
-            binding.apply {
-                val shareIntent = Intent()
-
-                shareIntent.apply {
-                    action = Intent.ACTION_SEND
-                    putExtra(
-                        Intent.EXTRA_TEXT,
-                        root.context.getString(R.string.share_message) +
-                                "${item.content} at ${item.title}!"
-                    )
-                    type = "text/plain"
-                }
-
-                root.context.startActivity(shareIntent)
             }
         }
 
@@ -87,4 +60,13 @@ class AlertDiffCallBack : DiffUtil.ItemCallback<Alert>() {
     override fun areContentsTheSame(oldItem: Alert, newItem: Alert): Boolean {
         return oldItem.id == newItem.id
     }
+}
+
+class AlertListener(val shareClickListener: (Alert) -> Unit,
+                    val deleteClickListener: (Alert) -> Unit,
+                    val checkboxClickListener: (View, Alert) -> Unit) {
+
+    fun onShareClick(item: Alert) = shareClickListener(item)
+    fun onDeleteClick(item: Alert) = deleteClickListener(item)
+    fun onCheckboxClick(checkbox: View, item: Alert) = checkboxClickListener(checkbox, item)
 }

@@ -12,8 +12,8 @@ import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentBranchesBinding
 import com.example.goldameirl.model.Branch
 import com.example.goldameirl.viewmodel.BranchAdapter
+import com.example.goldameirl.viewmodel.BranchListener
 import com.example.goldameirl.viewmodel.BranchesViewModel
-import com.example.goldameirl.viewmodel.BranchesViewModelFactory
 
 class BranchesFragment : Fragment(){
     private lateinit var viewModel: BranchesViewModel
@@ -30,10 +30,12 @@ class BranchesFragment : Fragment(){
             R.layout.fragment_branches, container, false
         )
 
-        val viewModelFactory = BranchesViewModelFactory(application)
-        viewModel = ViewModelProvider(this, viewModelFactory)
+        viewModel = ViewModelProvider(
+            this, ViewModelProvider.AndroidViewModelFactory.getInstance(application))
             .get(BranchesViewModel::class.java)
-        adapter = BranchAdapter()
+
+        adapter = BranchAdapter(BranchListener(viewModel.phoneClick))
+
         binding.apply {
             viewModel = this@BranchesFragment.viewModel
             branchesList.adapter = adapter
