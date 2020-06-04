@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.goldameirl.databinding.BranchesListItemBinding
 import com.example.goldameirl.model.Branch
 
-class BranchAdapter(val clickListener: BranchListener):
+class BranchAdapter(private val clickListener: BranchListener):
     ListAdapter<Branch, BranchAdapter.ViewHolder>(BranchDiffCallBack()) {
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position), clickListener)

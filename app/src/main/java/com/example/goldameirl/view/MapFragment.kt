@@ -51,6 +51,8 @@ class MapFragment : Fragment(){
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync(viewModel)
 
+        preferences = PreferenceManager.getDefaultSharedPreferences(context)
+
         observeViewModel()
         initButtons()
         initToggles()
@@ -59,21 +61,21 @@ class MapFragment : Fragment(){
     }
 
     private fun observeViewModel() {
-        viewModel.mapReady.observe(viewLifecycleOwner, Observer {
+        viewModel.isMapReady.observe(viewLifecycleOwner, Observer {
             if (it) {
-                viewModel.afterMapReady()
+                viewModel.onMapLoaded()
                 setupAnnotations()
                 setLayerToggleListeners()
             }
         })
 
-        viewModel.toAlerts.observe(viewLifecycleOwner, Observer { toAlerts ->
+        viewModel.shouldNavigateToAlerts.observe(viewLifecycleOwner, Observer { toAlerts ->
             if (toAlerts) {
                 this.findNavController().navigate(
                     MapFragmentDirections
                         .mapFragmentToAlertsFragment()
                 )
-                viewModel.navigatedToAlerts()
+                viewModel.doneNavigatingToAlerts()
             }
         })
     }
@@ -98,12 +100,10 @@ class MapFragment : Fragment(){
 
             toggleList.add(branchToggle)
             toggleList.add(anitaToggle)
-        }
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(context)
-
-        toggleList.forEach {
-            it.isChecked = preferences.getBoolean(it.tag as String, true)
+            toggleList.forEach {
+                it.isChecked = preferences.getBoolean(it.tag as String, true)
+            }
         }
     }
 

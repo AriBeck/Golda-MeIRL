@@ -31,26 +31,30 @@ import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 
 class MapViewModel(
-     application: Application
+    application: Application
 ) : AndroidViewModel(application), OnMapReadyCallback{
-    private val app = getApplication<Application>()
-    private val branchManager = BranchManager.getInstance(app)
+    private val branchManager = BranchManager.getInstance(application)
+    private val locationTool = LocationTool.getInstance(application)
     private lateinit var mapboxMap: MapboxMap
 
-    private val _mapReady = MutableLiveData<Boolean>()
-    val mapReady: LiveData<Boolean>
-        get() = _mapReady
+    private val _isMapReady = MutableLiveData<Boolean>()
+    val isMapReady: LiveData<Boolean>
+        get() = _isMapReady
 
-    private val _toAlerts = MutableLiveData<Boolean>()
-    val toAlerts: LiveData<Boolean>
-        get() = _toAlerts
+    private val _shouldNavigateToAlerts = MutableLiveData<Boolean>()
+    val shouldNavigateToAlerts: LiveData<Boolean>
+        get() = _shouldNavigateToAlerts
 
-    private var currentLocation = LocationTool.getInstance(application)?.currentLocation!!
+    private var currentLocation = locationTool?.currentLocation!!
     private var branches: List<Branch>? = null
     private lateinit var anitaJsonObserver: Observer<String>
-    private var goldaBranchesObserver: Observer<List<Branch>>
+    private lateinit var goldaBranchesObserver: Observer<List<Branch>>
 
     init {
+        setJsonObservers()
+    }
+
+    private fun setJsonObservers() {
         goldaBranchesObserver = Observer { branches ->
             this.branches = branches
         }
@@ -59,24 +63,28 @@ class MapViewModel(
 
     override fun onMapReady(mapboxMap: MapboxMap) {
         this.mapboxMap = mapboxMap
+
         mapboxMap.setStyle(Style.DARK) {
             enableLocationComponent(it)
 
             anitaJsonObserver = Observer { anitaJson ->
-                it.addImage(
-                    ANITA_ICON_ID,
-                    BitmapFactory.decodeResource(app.resources, R.drawable.icon_anita)
-                )
-                it.addSource(GeoJsonSource(ANITA_SOURCE_ID, anitaJson))
+                mapboxMap.style?.apply {
+                    addImage(
+                        ANITA_ICON_ID,
+                        BitmapFactory.decodeResource(getApplication<Application>().resources, R.drawable.icon_anita)
+                    )
+                    addSource(GeoJsonSource(ANITA_SOURCE_ID, anitaJson))
+                }
             }
 
             branchManager?.anitaJson?.observeForever(anitaJsonObserver)
-            _mapReady.value = true
+
+            _isMapReady.value = true
         }
     }
 
-    fun afterMapReady() {
-        _mapReady.value = false
+    fun onMapLoaded() {
+        _isMapReady.value = false
     }
 
     private fun removeLayer(layerID: String) {
@@ -100,7 +108,7 @@ class MapViewModel(
                 (MarkerOptions()
                     .position(LatLng(branch.latitude, branch.longitude))
                     .setIcon(
-                        IconFactory.getInstance(app)
+                        IconFactory.getInstance(getApplication())
                             .fromResource(R.drawable.icon_branch)
                     )
                     .title(branch.name)
@@ -123,6 +131,7 @@ class MapViewModel(
                         symbolLayer.setProperties(PropertyFactory.iconImage(ANITA_ICON_ID))
                     }
                 }
+
                 it.addLayer(symbolLayer!!)
             }
         }
@@ -141,13 +150,13 @@ class MapViewModel(
 
     @SuppressLint("MissingPermission")
     private fun enableLocationComponent(loadedMapStyle: Style) {
-        if (PermissionsManager.areLocationPermissionsGranted(app)) {
-            val customLocationComponentOptions = LocationComponentOptions.builder(app)
+        if (PermissionsManager.areLocationPermissionsGranted(getApplication())) {
+            val customLocationComponentOptions = LocationComponentOptions.builder(getApplication())
                 .trackingGesturesManagement(true)
                 .build()
 
             val locationComponentActivationOptions =
-                LocationComponentActivationOptions.builder(app, loadedMapStyle)
+                LocationComponentActivationOptions.builder(getApplication(), loadedMapStyle)
                     .locationComponentOptions(customLocationComponentOptions)
                     .build()
 
@@ -158,7 +167,7 @@ class MapViewModel(
                 renderMode = RenderMode.COMPASS
             }
 
-            LocationTool.getInstance(app)?.subscribe(onLocationChangeSuccess)
+            locationTool?.subscribe(onLocationChangeSuccess)
             centerCamera()
         }
     }
@@ -174,7 +183,7 @@ class MapViewModel(
     }
 
     private val onLocationChangeSuccess = { newLocation: Location ->
-        if (newLocation.distanceTo(currentLocation) >= 100) {
+        if (newLocation.distanceTo(currentLocation) >= CAMERA_CHANGE_DISTANCE) {
             mapboxMap.locationComponent.forceLocationUpdate(newLocation)
             centerCamera()
         }
@@ -183,19 +192,21 @@ class MapViewModel(
     }
 
     fun navigateToAlerts() {
-        _toAlerts.value = true
+        _shouldNavigateToAlerts.value = true
     }
 
-    fun navigatedToAlerts() {
-        _toAlerts.value = false
+    fun doneNavigatingToAlerts() {
+        _shouldNavigateToAlerts.value = false
     }
 
     override fun onCleared() {
-        LocationTool.getInstance(app)?.unsubscribe(onLocationChangeSuccess)
+        locationTool?.unsubscribe(onLocationChangeSuccess)
+
         branchManager?.apply {
             anitaJson.removeObserver(anitaJsonObserver)
             branches.removeObserver(goldaBranchesObserver)
         }
+
         super.onCleared()
     }
 }

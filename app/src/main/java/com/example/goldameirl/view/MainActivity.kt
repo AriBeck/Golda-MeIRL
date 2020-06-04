@@ -32,10 +32,11 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
 
         binding = DataBindingUtil.setContentView(this,
             R.layout.activity_main)
+        
         navController = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment)!!.findNavController()
-        findViewById<BottomNavigationView>(R.id.bottom_nav)
-            .setupWithNavController(navController)
+
+        binding.bottomNav.setupWithNavController(navController)
     }
 
     override fun onExplanationNeeded(permissionsToExplain: List<String>) {

@@ -4,9 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View"/>
+        <import type="com.example.goldameirl.model.Branch"/>
+        <import type="com.example.goldameirl.misc.ConstantsKt"/>
+
         <variable
             name="viewModel"
             type="com.example.goldameirl.viewmodel.BranchesViewModel" />
+
+        <variable
+            name="list"
+            type="java.util.List&lt;Branch&gt;" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -61,7 +69,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="@{(chip) -> viewModel.onChipChecked(chip)}"
-                    android:tag="ABC"
+                    android:tag="@{ConstantsKt.ABC_TAG}"
                     android:text="@string/abc_chip"
                     app:checkedIconVisible="true"
                     app:chipBackgroundColor="@color/selected_highlight" />
@@ -71,7 +79,7 @@
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:tag="Location"
+                    android:tag="@{ConstantsKt.LOCATION_TAG}"
                     android:onClick="@{(chip) -> viewModel.onChipChecked(chip)}"
                     android:text="@string/location_chip"
                     app:checkedIconVisible="true"
@@ -91,7 +99,7 @@
             android:text="@string/branches_empty"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             android:textColor="@color/primaryTextColor"
-            android:visibility="gone"
+            android:visibility="@{list.empty ? View.VISIBLE : View.GONE}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -102,6 +110,7 @@
             android:id="@+id/branches_list"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:visibility="@{list.empty ? View.GONE : View.VISIBLE}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

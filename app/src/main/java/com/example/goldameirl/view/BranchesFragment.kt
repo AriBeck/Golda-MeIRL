@@ -10,7 +10,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentBranchesBinding
-import com.example.goldameirl.model.Branch
 import com.example.goldameirl.viewmodel.BranchAdapter
 import com.example.goldameirl.viewmodel.BranchListener
 import com.example.goldameirl.viewmodel.BranchesViewModel
@@ -43,26 +42,11 @@ class BranchesFragment : Fragment(){
 
         viewModel.branches.observe(viewLifecycleOwner, Observer { list ->
             list?.let {
-                setListVisibility(it)
+                binding.list = it
+                adapter.submitList(it)
             }
         })
 
         return binding.root
-    }
-
-    private fun setListVisibility(list: List<Branch>) {
-        if (list.isEmpty()) {
-            binding.apply {
-                binding.branchesList.visibility = View.GONE
-                binding.branchesEmpty.visibility = View.VISIBLE
-            }
-        } else {
-            adapter.submitList(list)
-
-            binding.apply {
-                branchesEmpty.visibility = View.GONE
-                branchesList.visibility = View.VISIBLE
-            }
-        }
     }
 }

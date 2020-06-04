@@ -37,7 +37,10 @@ class GoldaApplication: Application() {
             1, TimeUnit.DAYS)
             .setConstraints(constraints)
             .build()
-        Log.d("GoldaApplication", "WorkManager: Periodic Work request for sync is scheduled")
+
+        Log.d("GoldaApplication",
+            "WorkManager: Periodic Work request for sync is scheduled")
+
         WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
             RefreshWorker.WORK_NAME,
             ExistingPeriodicWorkPolicy.KEEP,

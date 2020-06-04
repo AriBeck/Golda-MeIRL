@@ -1,6 +1,7 @@
 package com.example.goldameirl.model
 
 import android.content.Context
+import com.example.goldameirl.misc.ANITA_JSON_SOURCE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,7 +14,7 @@ class BranchManager private constructor (application: Context) {
     init {
         CoroutineScope(Dispatchers.Default).launch {
             repository.refreshBranches()
-            repository.getGeoJson("anita")
+            repository.getGeoJson(ANITA_JSON_SOURCE)
         }
     }
 

@@ -13,32 +13,36 @@ import com.example.goldameirl.model.AlertManager
 class AlertsViewModel(
     application: Application
 ) : AndroidViewModel(application) {
-    val app = getApplication<Application>()
-    val alerts = AlertManager.getInstance(app)?.alerts
+    private val alertManager = AlertManager.getInstance(application)
+    val alerts = alertManager?.alerts
 
     val shareClick: (Alert) -> Unit = { item ->
         val shareIntent = Intent()
+
         shareIntent.apply {
             action = Intent.ACTION_SEND
+
             putExtra(
                 Intent.EXTRA_TEXT,
-                app.getString(R.string.share_message) +
-                        "${item.content} " + app.getString(R.string.at) + "${item.title}!"
+                application.getString(R.string.share_message) +
+                        "${item.content} " + application.getString(R.string.at) + " ${item.title}!"
             )
+
             type = PLAIN_TEXT
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
 
-        app.startActivity(shareIntent)
+        application.startActivity(shareIntent)
     }
 
     val deleteClick: (Alert) -> Unit = { item ->
-        AlertManager.getInstance(app)?.delete(item)
+        alertManager?.delete(item)
     }
 
     val checkboxClick: (View, Alert) -> Unit = {checkbox, item ->
         if (checkbox is CheckBox) {
             item.isRead = checkbox.isChecked
-            AlertManager.getInstance(app)?.update(item)
+            alertManager?.update(item)
         }
     }
 }

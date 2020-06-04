@@ -10,7 +10,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.goldameirl.R
 import com.example.goldameirl.databinding.FragmentAlertsBinding
-import com.example.goldameirl.model.Alert
 import com.example.goldameirl.viewmodel.AlertAdapter
 import com.example.goldameirl.viewmodel.AlertListener
 import com.example.goldameirl.viewmodel.AlertsViewModel
@@ -45,20 +44,11 @@ class AlertsFragment : Fragment() {
 
         viewModel.alerts?.observe(viewLifecycleOwner, Observer { list ->
             list?.let {
-                setListVisibility(it)
+                binding.list = it
+                adapter.submitList(it)
             }
         })
-        return binding.root
-    }
 
-    private fun setListVisibility(it: List<Alert>) {
-        if (it.isEmpty()) {
-            binding.alertList.visibility = View.GONE
-            binding.alertsEmpty.visibility = View.VISIBLE
-        } else {
-            adapter.submitList(it)
-            binding.alertsEmpty.visibility = View.GONE
-            binding.alertList.visibility = View.VISIBLE
-        }
+        return binding.root
     }
 }

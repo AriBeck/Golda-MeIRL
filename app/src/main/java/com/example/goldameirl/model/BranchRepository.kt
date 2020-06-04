@@ -3,6 +3,7 @@ package com.example.goldameirl.model
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import com.example.goldameirl.db.DB
+import com.example.goldameirl.misc.ANITA_JSON_SOURCE
 import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -28,7 +29,7 @@ class BranchRepository(application: Context) {
 
                 override fun onResponse(call: Call<String>, response: Response<String>) {
                     when (source) {
-                        "anita" -> anitaJson.value = response.body()
+                        ANITA_JSON_SOURCE -> anitaJson.value = response.body()
                     }
                 }
             })

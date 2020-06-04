@@ -35,6 +35,7 @@ class LocationTool private constructor(
                     instance = LocationTool(application)
                     INSTANCE = instance
                 }
+
                 return instance
             }
         }
@@ -71,6 +72,7 @@ class LocationTool private constructor(
         override fun onSuccess(result: LocationEngineResult?) {
             val newLocation = result?.lastLocation ?: return
             currentLocation = newLocation
+
             locationChangeSuccessWorkList.forEach {
                 it(newLocation)
             }

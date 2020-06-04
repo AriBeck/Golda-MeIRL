@@ -8,6 +8,7 @@ const val ALERT_GROUP_ID = "com.example.goldameirl"
 
 const val DEFAULT_ZOOM = 15.0
 
+const val ANITA_JSON_SOURCE = "anita"
 const val ANITA_LAYER_ID = "anita-layer"
 const val ANITA_SOURCE_ID = "anita-source"
 const val ANITA_ICON_ID = "anita-icon"
@@ -33,3 +34,8 @@ const val PLAIN_TEXT = "text/plain"
 
 const val LOCATION_ENGINE_INTERVAL = 1000L
 const val MAX_WAIT_TIME = 5000L
+
+const val CAMERA_CHANGE_DISTANCE = 100
+
+const val ABC_TAG = "ABC"
+const val LOCATION_TAG = "Location"

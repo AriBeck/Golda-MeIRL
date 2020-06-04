@@ -27,6 +27,7 @@ abstract class DB : RoomDatabase() {
                         .build()
                     INSTANCE = instance
                 }
+
                 return instance
             }
         }

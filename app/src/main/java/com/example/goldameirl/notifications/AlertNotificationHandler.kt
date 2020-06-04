@@ -42,12 +42,15 @@ class AlertNotificationHandler(override val application: Context, override val c
 
     private fun initShareIntent(content: String, title: String) {
         val intent = Intent()
+
         intent.apply {
             action = Intent.ACTION_SEND
+
             putExtra(
                 Intent.EXTRA_TEXT, application.getString(R.string.share_message) +
-                        content + application.getString(R.string.at) + title
+                        "$content " + application.getString(R.string.at) + " $title"
             )
+
             type = PLAIN_TEXT
         }
         shareIntent = PendingIntent.getActivity(application, 0, intent, 0)
@@ -57,6 +60,7 @@ class AlertNotificationHandler(override val application: Context, override val c
         val intent = Intent(application, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
+
         appIntent = PendingIntent.getActivity(application, 0, intent, 0)
     }
 }

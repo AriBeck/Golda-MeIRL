@@ -20,6 +20,7 @@ class SettingsFragment: PreferenceFragmentCompat() {
             setOnPreferenceChangeListener { preference, newValue ->
                 preference.summary = (newValue as Int).times(RADIUS_MULTIPLIER).toString() +
                         getString(R.string.meters)
+
                 true
             }
         }

@@ -32,7 +32,7 @@ class AlertManager private constructor (val application: Context):
             application.getString(R.string.alert_channel_name)
         )
 
-    var preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
+    private var preferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(application)
 
     private val onLocationChangeSuccess = { newLocation: Location ->
         sendAlertWhenNearBranchAndExceededInterval(newLocation)
@@ -56,6 +56,7 @@ class AlertManager private constructor (val application: Context):
                     instance = AlertManager(application)
                     INSTANCE = instance
                 }
+
                 return instance
             }
         }
@@ -68,7 +69,6 @@ class AlertManager private constructor (val application: Context):
             if (LocationTool.isLocationInRadius(location, branch.location(), radius) &&
                 hasTimeSinceLastAlertExceededInterval(branch)) {
                 storeAlertTime(branch)
-
                 sendAlert(branch.name, branch.discounts)
             }
         }
@@ -84,8 +84,10 @@ class AlertManager private constructor (val application: Context):
     private fun hasTimeSinceLastAlertExceededInterval(branch: Branch): Boolean {
         alertTime = preferences.getLong(branch.name, DEFAULT_ALERT_TIME)
         val timeSinceLastAlert = System.currentTimeMillis() - alertTime!!
+
         val intervalMillis = TimeUnit.MILLISECONDS
             .convert(interval ?: DEFAULT_INTERVAL, TimeUnit.MINUTES)
+
         return timeSinceLastAlert >= intervalMillis
     }
 
@@ -135,6 +137,7 @@ class AlertManager private constructor (val application: Context):
     private fun getPreferences() {
         interval = preferences.getInt(INTERVAL_KEY, DEFAULT_INTERVAL_PREFERENCE).toLong().times(
             INTERVAL_MULTIPLIER)
+
         radius = preferences.getInt(RADIUS_KEY, DEFAULT_RADIUS_PREFERENCE).times(RADIUS_MULTIPLIER)
     }
 }
